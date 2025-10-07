@@ -22,7 +22,7 @@
 
 - [x] T011 `src/app/character-animation/page.tsx` を作成し、移行したコンポーネント (`Header`, `CharacterGenerator`, `SceneCreator` 等) をインポートしてアプリケーションのメインレイアウトを構築する。(ID を T012 から T011 に変更)
 - [x] T012 T007 で移動した全コンポーネントファイル内のインポートパスを、新しいプロジェクト構造に合わせて修正する (`services` -> `utils`、コンポーネント間の相対パスなど)。(ID を T013 から T012 に変更)
-- [ ] T013 `src/utils/geminiService.ts` のインポートパスを修正する。(ID を T014 から T013 に変更)
+- [x] T013 `src/utils/geminiService.ts` のインポートパスを修正する。(ID を T014 から T013 に変更)
 - [ ] T014 T012 で作成した `page.tsx` および全コンポーネントで、静的アセットの参照パスを新しい `public/` ディレクトリ構造に合わせて修正する。(ID を T015 から T014 に変更)
 
 ## フェーズ 3.4: 検証
