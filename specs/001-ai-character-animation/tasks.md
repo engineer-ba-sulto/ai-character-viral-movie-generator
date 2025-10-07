@@ -4,9 +4,9 @@
 
 ## フェーズ 3.1: セットアップ
 
-- [ ] T001 [P] `src/app/character-animation/` ディレクトリを作成する。
-- [ ] T002 [P] `src/components/` ディレクトリが存在することを確認する (なければ作成)。
-- [ ] T003 [P] `src/utils/` ディレクトリを作成する。
+- [x] T001 [P] `src/app/character-animation/` ディレクトリを作成する。
+- [x] T002 [P] `src/components/` ディレクトリが存在することを確認する (なければ作成)。
+- [x] T003 [P] `src/utils/` ディレクトリを作成する。
 - [ ] T004 `bun add @google/genai` を実行して、必要な依存関係をインストールする。
 - [ ] T005 `.env.local` ファイルに、`ai-character-animation-react` プロジェクトで使われていた Google API キーの環境変数を設定する。(ID を T006 から T005 に変更)
 
