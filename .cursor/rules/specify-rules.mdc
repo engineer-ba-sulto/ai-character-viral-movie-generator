@@ -1,0 +1,24 @@
+# ai-character-animation Development Guidelines
+
+Auto-generated from all feature plans. Last updated: 2025-10-07
+
+## Active Technologies
+- TypeScript (as defined in the root `tsconfig.json`) + Next.js, React, Tailwind CSS, `@google/genai` (001-ai-character-animation)
+
+## Project Structure
+```
+src/
+tests/
+```
+
+## Commands
+npm test [ONLY COMMANDS FOR ACTIVE TECHNOLOGIES][ONLY COMMANDS FOR ACTIVE TECHNOLOGIES] npm run lint
+
+## Code Style
+TypeScript (as defined in the root `tsconfig.json`): Follow standard conventions
+
+## Recent Changes
+- 001-ai-character-animation: Added TypeScript (as defined in the root `tsconfig.json`) + Next.js, React, Tailwind CSS, `@google/genai`
+
+<!-- MANUAL ADDITIONS START -->
+<!-- MANUAL ADDITIONS END -->

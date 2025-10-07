@@ -3,13 +3,12 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
-}
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  /* Banana color palette */
+  --banana-light: #fef3c7;
+  --banana-dark: #d97706;
+  --banana-gray: #6b7280;
+  --banana-yellow: #fbbf24;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -23,4 +22,55 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Custom Banana Color Classes */
+.bg-banana-light {
+  background-color: var(--banana-light);
+}
+
+.bg-banana-dark {
+  background-color: var(--banana-dark);
+}
+
+.bg-banana-yellow {
+  background-color: var(--banana-yellow);
+}
+
+.text-banana-dark {
+  color: var(--banana-dark);
+}
+
+.text-banana-gray {
+  color: var(--banana-gray);
+}
+
+.text-banana-yellow {
+  color: var(--banana-yellow);
+}
+
+.border-banana-yellow {
+  border-color: var(--banana-yellow);
+}
+
+.border-banana-gray {
+  border-color: var(--banana-gray);
+}
+
+.hover\:bg-banana-light:hover {
+  background-color: var(--banana-light);
+}
+
+.hover\:border-banana-yellow:hover {
+  border-color: var(--banana-yellow);
+}
+
+.focus\:ring-banana-yellow:focus {
+  --tw-ring-color: var(--banana-yellow);
+  box-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width))
+    var(--tw-ring-color);
+}
+
+.focus\:border-banana-yellow:focus {
+  border-color: var(--banana-yellow);
 }
