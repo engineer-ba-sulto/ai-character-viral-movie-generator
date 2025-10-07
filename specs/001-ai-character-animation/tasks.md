@@ -12,7 +12,7 @@
 
 ## フェーズ 3.2: ファイル移行
 
-- [ ] T006 [P] `ai-character-animation-react/components/` 内の全コンポーネントファイル (10 ファイル) を `src/components/` に移動する。(ID を T007 から T006 に変更)
+- [x] T006 [P] `ai-character-animation-react/components/` 内の全コンポーネントファイル (10 ファイル) を `src/components/` に移動する。(ID を T007 から T006 に変更)
 - [ ] T007 [P] `ai-character-animation-react/services/geminiService.ts` を `src/utils/geminiService.ts` に移動する。(ID を T008 から T007 に変更)
 - [ ] T008 [P] `ai-character-animation-react/types.ts` を `src/types/character-animation.ts` として移動または統合する。(ID を T009 から T008 に変更)
 - [ ] T009 [P] `ai-character-animation-react/constants.ts` を `src/constants/character-animation.ts` として移動または統合する。(ID を T010 から T009 に変更)
