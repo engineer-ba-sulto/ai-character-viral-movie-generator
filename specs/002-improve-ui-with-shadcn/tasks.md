@@ -35,7 +35,7 @@
   - **説明**: カードの構造を `shadcn/ui` の `Card` コンポーネント（`Card`, `CardContent`, `CardFooter` など）を使用して再構築し、ボタンを `Button` コンポーネントに置き換えます。
   - **依存関係**: T001
 
-- [ ] **T006: `SavedCharacters` コンポーネントのリファクタリング [P]**
+- [x] **T006: `SavedCharacters` コンポーネントのリファクタリング [P]**
 
   - **ファイル**: `src/components/SavedCharacters.tsx`
   - **説明**: `ImageCard` のリファクタリング（T005）に合わせて、レイアウトを調整し、必要に応じてボタンを `Button` コンポーネントに置き換えます。
