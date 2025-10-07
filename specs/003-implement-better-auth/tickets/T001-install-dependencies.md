@@ -1,4 +1,4 @@
-# T001: 依存関係のインストール
+# T001: 依存関係のインストール [X]
 
 ## 説明
 
@@ -14,13 +14,13 @@
 以下のコマンドをターミナルで実行します。
 
 ```bash
-bun add better-auth @better-auth/d1-adapter zod
+bun add better-auth zod
 ```
 
 次に、`shadcn/ui` の `Form` コンポーネントを追加します。
 
 ```bash
-npx shadcn-ui@latest add form
+bunx shadcn@latest add form
 ```
 
 **注意**: `shadcn-ui@latest add form` コマンドを実行すると、依存関係である `react-hook-form` と `@hookform/resolvers` が自動的にインストールされます。
