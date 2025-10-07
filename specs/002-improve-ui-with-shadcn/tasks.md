@@ -47,7 +47,7 @@
   - **説明**: 既存の `<button>`, `<input>`, `<textarea>`, `<select>`, `<label>` を `shadcn/ui` の `Button`, `Input`, `Textarea`, `Select`, `Label` コンポーネントに置き換え、レイアウトを `Card` 構造で整理します。
   - **依存関係**: T001
 
-- [ ] **T008: `ScenePreviewModal` コンポーネントのリファクタリング [P]**
+- [x] **T008: `ScenePreviewModal` コンポーネントのリファクタリング [P]**
 
   - **ファイル**: `src/components/ScenePreviewModal.tsx`
   - **説明**: モーダルの構造を `shadcn/ui` の `Dialog` コンポーネントを使用して再構築し、ボタンを `Button` コンポーネントに置き換えます。
