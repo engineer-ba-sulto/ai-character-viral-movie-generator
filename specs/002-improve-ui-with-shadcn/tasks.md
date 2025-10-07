@@ -29,7 +29,7 @@
   - **説明**: モーダルの構造を `shadcn/ui` の `Dialog` コンポーネント（`Dialog`, `DialogContent`, `DialogHeader`, `DialogTitle`, `DialogFooter` など）を使用して再構築し、ボタンを `Button` コンポーネントに置き換えます。
   - **依存関係**: T001
 
-- [ ] **T005: `ImageCard` コンポーネントのリファクタリング [P]**
+- [x] **T005: `ImageCard` コンポーネントのリファクタリング [P]**
 
   - **ファイル**: `src/components/ImageCard.tsx`
   - **説明**: カードの構造を `shadcn/ui` の `Card` コンポーネント（`Card`, `CardContent`, `CardFooter` など）を使用して再構築し、ボタンを `Button` コンポーネントに置き換えます。
