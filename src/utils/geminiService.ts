@@ -1,15 +1,29 @@
 import { GoogleGenAI, Modality } from "@google/genai";
 
-if (!process.env.GOOGLE_API_KEY) {
-  throw new Error("GOOGLE_API_KEY environment variable not set");
-}
+// Check if API key is available
+const hasApiKey =
+  !!process.env.GOOGLE_API_KEY &&
+  process.env.GOOGLE_API_KEY !== "your_google_api_key_here";
 
-const ai = new GoogleGenAI({ apiKey: process.env.GOOGLE_API_KEY });
+// Initialize AI only if API key is available
+const ai = hasApiKey
+  ? new GoogleGenAI({ apiKey: process.env.GOOGLE_API_KEY! })
+  : null;
 
 export const generateCharacterSheet = async (
   description: string,
   style: string
 ): Promise<{ base64: string; mimeType: string }> => {
+  if (!hasApiKey || !ai) {
+    // Return a mock response for testing without API key
+    console.warn("GOOGLE_API_KEY not set, returning mock character image");
+    return {
+      base64:
+        "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==",
+      mimeType: "image/png",
+    };
+  }
+
   const prompt = `A high-quality, detailed character sheet for a new character. Full-body shot in a neutral standing pose, filling the entire vertical space of the 9:16 frame. Clean, plain white background. The character has the following features: ${description}. The art style should be: ${style}.`;
 
   const response = await ai.models.generateImages({
@@ -34,6 +48,12 @@ export const generateScene = async (
   referenceImage: { base64: string; mimeType: string },
   sceneDescription: string
 ): Promise<string> => {
+  if (!hasApiKey || !ai) {
+    // Return a mock response for testing without API key
+    console.warn("GOOGLE_API_KEY not set, returning mock scene image");
+    return "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==";
+  }
+
   const imagePart = {
     inlineData: {
       data: referenceImage.base64,
@@ -66,6 +86,16 @@ export const startVideoGeneration = async (
   referenceImage: { base64: string; mimeType: string },
   duration: number
 ) => {
+  if (!hasApiKey || !ai) {
+    // Return a mock operation for testing without API key
+    console.warn("GOOGLE_API_KEY not set, returning mock video operation");
+    return {
+      name: "mock-operation",
+      done: false,
+      metadata: { progress: 0 },
+    };
+  }
+
   const operation = await ai.models.generateVideos({
     model: "veo-2.0-generate-001",
     prompt: prompt,
@@ -83,6 +113,23 @@ export const startVideoGeneration = async (
 };
 
 export const checkVideoOperation = async (operation: any) => {
+  if (!hasApiKey || !ai) {
+    // Return a mock completed operation for testing without API key
+    console.warn(
+      "GOOGLE_API_KEY not set, returning mock completed video operation"
+    );
+    return {
+      name: operation.name,
+      done: true,
+      response: {
+        video: {
+          uri: "mock-video-uri",
+          mimeType: "video/mp4",
+        },
+      },
+    };
+  }
+
   const updatedOperation = await ai.operations.getVideosOperation({
     operation: operation,
   });
