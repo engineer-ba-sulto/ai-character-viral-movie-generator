@@ -1,4 +1,4 @@
-# T008: Better Auth API ルートの作成
+# T010: Better Auth API ルートの作成 [X]
 
 ## 説明
 
@@ -15,10 +15,11 @@ Next.js App Router を使用して、Better Auth の API エンドポイント�
 ### 2. ルートハンドラーの実装
 
 ```typescript:src/app/api/auth/[...all]/route.ts
-import { auth } from "@/lib/auth"; // T005で作成したauthインスタンスのパス
+import { auth } from "@/lib/auth/server";
 import { toNextJsHandler } from "better-auth/next-js";
 
-export const { POST, GET } = toNextJsHandler(auth);
+const authInstance = await auth();
+export const { POST, GET } = toNextJsHandler(authInstance);
 ```
 
 ### 3. 重要なポイント
