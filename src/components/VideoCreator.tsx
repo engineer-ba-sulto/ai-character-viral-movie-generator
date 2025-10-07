@@ -11,7 +11,16 @@ import React, { useEffect, useRef, useState } from "react";
 import LoadingSpinner from "./LoadingSpinner";
 import { DownloadIcon, PlusIcon, TrashIcon, UploadIcon } from "./icons";
 
-declare var JSZip: any;
+declare const JSZip: {
+  new (): {
+    file: (
+      name: string,
+      data: string | Blob,
+      options?: { base64?: boolean }
+    ) => void;
+    generateAsync: (options: { type: string }) => Promise<Blob>;
+  };
+};
 
 interface VideoCreatorProps {
   character: Character | null;
@@ -139,7 +148,10 @@ const VideoCreator: React.FC<VideoCreatorProps> = ({
 
           if (updatedOp.done) {
             const downloadLink =
-              updatedOp.response?.generatedVideos?.[0]?.video?.uri;
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              (updatedOp.response as any)?.generatedVideos?.[0]?.video?.uri ||
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              (updatedOp.response as any)?.video?.uri;
             if (downloadLink) {
               try {
                 const response = await fetch(
@@ -197,7 +209,8 @@ const VideoCreator: React.FC<VideoCreatorProps> = ({
             // Update operation object for next poll
             setClips((prev) =>
               prev.map((c) =>
-                c.id === clip.id ? { ...c, operation: updatedOp } : c
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                c.id === clip.id ? { ...c, operation: updatedOp as any } : c
               )
             );
           }
@@ -347,7 +360,8 @@ const VideoCreator: React.FC<VideoCreatorProps> = ({
         );
         setClips((prev) =>
           prev.map((c) =>
-            c.id === clip.id ? { ...c, operation: operation } : c
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            c.id === clip.id ? { ...c, operation: operation as any } : c
           )
         );
       } catch (err) {

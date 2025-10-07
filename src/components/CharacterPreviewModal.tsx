@@ -11,14 +11,9 @@ const CharacterPreviewModal: React.FC<CharacterPreviewModalProps> = ({
   character,
   onClose,
 }) => {
-  if (!character) {
-    return null;
-  }
-
-  const imageUrl = `data:${character.image.mimeType};base64,${character.image.base64}`;
-
   // Effect to handle Escape key press
   React.useEffect(() => {
+    if (!character) return;
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         onClose();
@@ -28,7 +23,13 @@ const CharacterPreviewModal: React.FC<CharacterPreviewModalProps> = ({
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [onClose]);
+  }, [onClose, character]);
+
+  if (!character) {
+    return null;
+  }
+
+  const imageUrl = `data:${character.image.mimeType};base64,${character.image.base64}`;
 
   return (
     <div

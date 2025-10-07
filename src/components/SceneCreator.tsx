@@ -11,7 +11,16 @@ import {
   UploadIcon,
 } from "./icons";
 
-declare var JSZip: any;
+declare const JSZip: {
+  new (): {
+    file: (
+      name: string,
+      data: string | Blob,
+      options?: { base64?: boolean }
+    ) => void;
+    generateAsync: (options: { type: string }) => Promise<Blob>;
+  };
+};
 
 interface SceneCreatorProps {
   character: Character | null;

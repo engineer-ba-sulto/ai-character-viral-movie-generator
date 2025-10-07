@@ -37,8 +37,10 @@ export const generateCharacterSheet = async (
   });
 
   if (response.generatedImages && response.generatedImages.length > 0) {
-    const imageData = response.generatedImages[0].image;
-    return { base64: imageData.imageBytes, mimeType: "image/png" };
+    const imageData = response.generatedImages[0]?.image;
+    if (imageData?.imageBytes) {
+      return { base64: imageData.imageBytes, mimeType: "image/png" };
+    }
   }
 
   throw new Error("Failed to generate character image.");
@@ -70,9 +72,14 @@ export const generateScene = async (
     },
   });
 
-  for (const part of response.candidates[0].content.parts) {
-    if (part.inlineData) {
-      return part.inlineData.data;
+  if (response.candidates && response.candidates.length > 0) {
+    const candidate = response.candidates[0];
+    if (candidate?.content?.parts) {
+      for (const part of candidate.content.parts) {
+        if (part.inlineData?.data) {
+          return part.inlineData.data;
+        }
+      }
     }
   }
 
@@ -112,6 +119,7 @@ export const startVideoGeneration = async (
   return operation;
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const checkVideoOperation = async (operation: any) => {
   if (!hasApiKey || !ai) {
     // Return a mock completed operation for testing without API key

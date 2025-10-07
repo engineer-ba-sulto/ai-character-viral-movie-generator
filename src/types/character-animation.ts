@@ -20,7 +20,7 @@ export interface VideoClip {
   motionPrompt: string;
   duration: number; // in seconds
   generatedVideoUrl?: string; // blob URL
-  status: 'idle' | 'generating' | 'done' | 'error';
-  operation?: any;
+  status: "idle" | "generating" | "done" | "error";
+  operation?: { name: string; [key: string]: unknown };
   errorMessage?: string;
 }

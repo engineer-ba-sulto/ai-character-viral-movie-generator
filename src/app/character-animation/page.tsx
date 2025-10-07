@@ -36,7 +36,7 @@ const PageNavigator: React.FC<PageNavigatorProps> = ({
 }) => {
   const getStepClass = (stepPage: Page) => {
     const isCurrent = currentPage === stepPage;
-    let baseClass =
+    const baseClass =
       "px-4 py-2 rounded-lg font-semibold transition-colors duration-200 text-sm md:text-base";
     if (isCurrent) {
       return `${baseClass} bg-banana-dark text-white cursor-default`;
