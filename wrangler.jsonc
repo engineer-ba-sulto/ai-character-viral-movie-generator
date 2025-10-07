@@ -19,7 +19,8 @@
     {
       "binding": "DB",
       "database_name": "ai-character-viral-movie-generator-db",
-      "database_id": "0032ec63-5f0a-41e6-b3ab-ff66435f9fdb"
+      "database_id": "0032ec63-5f0a-41e6-b3ab-ff66435f9fdb",
+      "migrations_dir": "src/db/migrations"
     }
   ]
   /**
