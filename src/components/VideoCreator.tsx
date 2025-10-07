@@ -140,10 +140,17 @@ const VideoCreator: React.FC<VideoCreatorProps> = ({
     "idle"
   );
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const prevClipsRef = useRef<VideoClip[]>(savedClips);
 
-  // Sync with parent state whenever clips change
+  // Sync with parent state whenever clips change (but not on initial mount)
   useEffect(() => {
-    onUpdateClips(clips);
+    // Only update parent if clips have actually changed from the previous value
+    const hasChanged =
+      JSON.stringify(clips) !== JSON.stringify(prevClipsRef.current);
+    if (hasChanged) {
+      prevClipsRef.current = clips;
+      onUpdateClips(clips);
+    }
   }, [clips, onUpdateClips]);
 
   // Polling logic for generating clips
