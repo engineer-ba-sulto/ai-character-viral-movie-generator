@@ -23,7 +23,7 @@
   - **説明**: 既存の `<button>`, `<input>`, `<textarea>` を `shadcn/ui` の `Button`, `Input`, `Textarea` コンポーネントに置き換えます。
   - **依存関係**: T001
 
-- [ ] **T004: `CharacterPreviewModal` コンポーネントのリファクタリング [P]**
+- [x] **T004: `CharacterPreviewModal` コンポーネントのリファクタリング [P]**
 
   - **ファイル**: `src/components/CharacterPreviewModal.tsx`
   - **説明**: モーダルの構造を `shadcn/ui` の `Dialog` コンポーネント（`Dialog`, `DialogContent`, `DialogHeader`, `DialogTitle`, `DialogFooter` など）を使用して再構築し、ボタンを `Button` コンポーネントに置き換えます。
