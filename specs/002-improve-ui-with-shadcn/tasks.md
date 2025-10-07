@@ -4,14 +4,14 @@
 
 ## 0. セットアップ
 
-- [ ] **T001: `shadcn/ui` の初期化**
+- [x] **T001: `shadcn/ui` の初期化**
   - **ファイル**: `package.json`, `tailwind.config.ts`, `src/app/globals.css`, `src/lib/utils.ts`, `components.json`
   - **説明**: `bunx --bun shadcn@latest init` を実行しプロジェクトを初期化します。コマンドが失敗した場合は、チケットに記載されている手順に従い、依存関係を手動でインストールします。
   - **依存関係**: なし
 
 ## 1. コア機能の実装
 
-- [ ] **T002: `Header` コンポーネントのリファクタリング [P]**
+- [x] **T002: `Header` コンポーネントのリファクタリング [P]**
 
   - **ファイル**: `src/components/Header.tsx`
   - **説明**: ナビゲーションリンクやボタンを `shadcn/ui` の `Button` やその他の適切なコンポーネントに置き換えます。
