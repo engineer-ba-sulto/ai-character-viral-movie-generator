@@ -1,22 +1,3 @@
-# T007: Better Auth サーバーサイド設定
-
-## 説明
-
-Better Auth のコアとなる設定ファイルを作成します。このファイルでは、`drizzleAdapter` を介したデータベース接続、`nanoid` による ID 生成、各種プラグインの有効化など、認証機能全体の設定を行います。
-
-## 依存関係のインストール
-
-`better-auth`の設定で`nanoid`を使用するため、以下のコマンドでパッケージをインストールします。
-
-```bash
-bun add nanoid
-```
-
-## 実装コード例
-
-`src/libs/auth/server.ts`という名前でファイルを作成し、以下の内容を記述します。
-
-```typescript:src/libs/auth/server.ts
 import { db } from "@/db"; // T006で作成したDrizzleインスタンス
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
@@ -56,9 +37,3 @@ export const auth = async () => {
   }
   return authInstance;
 };
-```
-
-**注意**:
-
-- この設定ファイルは `auth()` という非同期関数をエクスポートします。API ルートなどで `better-auth` の機能を利用する際は、`const authInstance = await auth()` のようにしてインスタンスを取得してから使用します。
-- `db()` は、`T006`
