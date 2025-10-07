@@ -4,6 +4,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import CharacterGenerator from "../../components/CharacterGenerator";
 import CharacterPreviewModal from "../../components/CharacterPreviewModal";
 import Header from "../../components/Header";
+import PageNavigator, { type Page } from "../../components/PageNavigator";
 import SavedCharacters from "../../components/SavedCharacters";
 import SceneCreator from "../../components/SceneCreator";
 import ScenePreviewModal from "../../components/ScenePreviewModal";
@@ -13,76 +14,6 @@ import type {
   GeneratedResult,
   VideoClip,
 } from "../../types/character-animation";
-
-type Page = "character" | "scene" | "video";
-
-// --- Page Navigator Component ---
-interface PageNavigatorProps {
-  currentPage: Page;
-  onNavigate: (page: Page) => void;
-  canGoToVideo: boolean;
-}
-
-const steps: { page: Page; title: string }[] = [
-  { page: "character", title: "1. キャラクター生成" },
-  { page: "scene", title: "2. シーン作成" },
-  { page: "video", title: "3. 動画作成" },
-];
-
-const PageNavigator: React.FC<PageNavigatorProps> = ({
-  currentPage,
-  onNavigate,
-  canGoToVideo,
-}) => {
-  return (
-    <nav className="bg-white rounded-xl shadow-lg p-3 mb-8">
-      <ol className="flex items-center justify-around gap-2">
-        {steps.map((step, index) => {
-          const isCurrent = currentPage === step.page;
-          const isDisabled =
-            isCurrent || (step.page === "video" && !canGoToVideo);
-
-          return (
-            <React.Fragment key={step.page}>
-              <li className="flex-1">
-                <button
-                  onClick={() => onNavigate(step.page)}
-                  disabled={isDisabled}
-                  className={`w-full text-center px-4 py-2 rounded-lg font-semibold transition-colors duration-200 text-sm md:text-base ${
-                    isCurrent
-                      ? "bg-banana-dark text-white cursor-default"
-                      : step.page === "video" && !canGoToVideo
-                      ? "bg-gray-200 text-gray-500 cursor-not-allowed"
-                      : "bg-white text-banana-dark hover:bg-banana-light"
-                  }`}
-                  aria-current={isCurrent ? "page" : undefined}
-                >
-                  {step.title}
-                </button>
-              </li>
-              {index < steps.length - 1 && (
-                <li className="text-banana-gray" aria-hidden="true">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-5 w-5"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                </li>
-              )}
-            </React.Fragment>
-          );
-        })}
-      </ol>
-    </nav>
-  );
-};
 
 const NO_CHARACTER_ID = "__NONE__";
 
