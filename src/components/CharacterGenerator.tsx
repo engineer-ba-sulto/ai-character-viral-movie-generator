@@ -1,6 +1,7 @@
 import { STYLE_PRESETS } from "@/constants/character-animation";
 import type { Character } from "@/types/character-animation";
 import { generateCharacterSheet } from "@/utils/geminiService";
+import Image from "next/image";
 import React, { useRef, useState } from "react";
 import { UploadIcon } from "./icons";
 import LoadingSpinner from "./LoadingSpinner";
@@ -184,9 +185,11 @@ const CharacterGenerator: React.FC<CharacterGeneratorProps> = ({
               </div>
             ) : (
               generatedImage && (
-                <img
+                <Image
                   src={`data:${generatedImage.mimeType};base64,${generatedImage.base64}`}
                   alt="Generated or uploaded character"
+                  width={400}
+                  height={600}
                   className="object-contain w-full h-full rounded-lg"
                 />
               )

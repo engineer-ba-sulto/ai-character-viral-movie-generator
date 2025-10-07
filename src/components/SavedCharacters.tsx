@@ -1,4 +1,5 @@
 import type { Character } from "@/types/character-animation";
+import Image from "next/image";
 import React from "react";
 import { DownloadIcon, ZoomInIcon } from "./icons";
 
@@ -35,9 +36,11 @@ const SavedCharacters: React.FC<SavedCharactersProps> = ({
               30
             )}`}
           >
-            <img
+            <Image
               src={`data:${char.image.mimeType};base64,${char.image.base64}`}
               alt={char.description}
+              width={200}
+              height={200}
               className="w-full aspect-square object-cover"
             />
             <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition-all duration-300 flex items-center justify-center gap-2">

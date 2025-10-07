@@ -1,3 +1,4 @@
+import Image from "next/image";
 import React from "react";
 import { CloseIcon, DownloadIcon } from "./icons";
 
@@ -50,9 +51,11 @@ const ScenePreviewModal: React.FC<ScenePreviewModalProps> = ({
           <CloseIcon />
         </button>
         <div className="relative">
-          <img
+          <Image
             src={imageUrl}
             alt="Generated scene preview"
+            width={800}
+            height={1200}
             className="w-full h-auto object-contain rounded-lg max-h-[80vh]"
           />
           <div className="absolute bottom-4 right-4">

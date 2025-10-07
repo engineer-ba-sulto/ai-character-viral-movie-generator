@@ -1,4 +1,5 @@
 import type { Character } from "@/types/character-animation";
+import Image from "next/image";
 import React from "react";
 import { CloseIcon, DownloadIcon } from "./icons";
 
@@ -51,9 +52,11 @@ const CharacterPreviewModal: React.FC<CharacterPreviewModalProps> = ({
           <CloseIcon />
         </button>
         <div className="relative w-full aspect-[9/16] bg-gray-100 rounded-lg mb-4 overflow-hidden">
-          <img
+          <Image
             src={imageUrl}
             alt={character.description}
+            width={400}
+            height={600}
             className="w-full h-full object-contain"
           />
           <div className="absolute bottom-4 right-4">

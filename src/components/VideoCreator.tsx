@@ -7,6 +7,7 @@ import {
   checkVideoOperation,
   startVideoGeneration,
 } from "@/utils/geminiService";
+import Image from "next/image";
 import React, { useEffect, useRef, useState } from "react";
 import LoadingSpinner from "./LoadingSpinner";
 import { DownloadIcon, PlusIcon, TrashIcon, UploadIcon } from "./icons";
@@ -496,9 +497,11 @@ const VideoCreator: React.FC<VideoCreatorProps> = ({
                         key={idx}
                         className="group relative rounded-lg overflow-hidden"
                       >
-                        <img
+                        <Image
                           src={`data:image/png;base64,${img}`}
                           alt={`${result.sceneDescription} ${idx + 1}`}
+                          width={200}
+                          height={200}
                           className="w-full h-full object-cover aspect-square"
                         />
                         <button
@@ -578,9 +581,11 @@ const VideoCreator: React.FC<VideoCreatorProps> = ({
                     <p className="text-xs font-bold text-banana-gray mb-1">
                       #{index + 1}
                     </p>
-                    <img
+                    <Image
                       src={`data:image/png;base64,${clip.sourceImage}`}
                       alt={clip.sourceSceneDescription}
+                      width={100}
+                      height={100}
                       className="w-full rounded-md aspect-square object-cover"
                     />
                   </div>

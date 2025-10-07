@@ -1,5 +1,6 @@
-import React from 'react';
-import { ZoomInIcon, DownloadIcon } from './icons';
+import Image from "next/image";
+import React from "react";
+import { DownloadIcon, ZoomInIcon } from "./icons";
 
 interface ImageCardProps {
   base64Image: string;
@@ -14,9 +15,11 @@ const ImageCard: React.FC<ImageCardProps> = ({ base64Image, onPreview }) => {
       className="group relative rounded-lg overflow-hidden aspect-square cursor-pointer"
       onClick={onPreview}
     >
-      <img
+      <Image
         src={imageUrl}
         alt="Generated scene"
+        width={300}
+        height={300}
         className="w-full h-full object-cover"
       />
       <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition-all duration-300 flex items-center justify-center gap-2">
