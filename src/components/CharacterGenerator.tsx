@@ -1,26 +1,30 @@
-
-import React, { useState, useRef } from 'react';
-import type { Character } from '../types';
-import { generateCharacterSheet } from '../services/geminiService';
-import LoadingSpinner from './LoadingSpinner';
-import { STYLE_PRESETS } from '../constants';
-import { UploadIcon } from './icons';
+import { STYLE_PRESETS } from "@/constants/character-animation";
+import type { Character } from "@/types/character-animation";
+import { generateCharacterSheet } from "@/utils/geminiService";
+import React, { useRef, useState } from "react";
+import { UploadIcon } from "./icons";
+import LoadingSpinner from "./LoadingSpinner";
 
 interface CharacterGeneratorProps {
   onCharacterSave: (character: Character) => void;
 }
 
-const CharacterGenerator: React.FC<CharacterGeneratorProps> = ({ onCharacterSave }) => {
-  const [description, setDescription] = useState<string>('');
+const CharacterGenerator: React.FC<CharacterGeneratorProps> = ({
+  onCharacterSave,
+}) => {
+  const [description, setDescription] = useState<string>("");
   const [style, setStyle] = useState<string>(STYLE_PRESETS[0]);
-  const [generatedImage, setGeneratedImage] = useState<{ base64: string, mimeType: string } | null>(null);
+  const [generatedImage, setGeneratedImage] = useState<{
+    base64: string;
+    mimeType: string;
+  } | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleGenerate = async () => {
     if (!description.trim()) {
-      setError('キャラクターの説明を入力してください。');
+      setError("キャラクターの説明を入力してください。");
       return;
     }
     setIsLoading(true);
@@ -30,13 +34,15 @@ const CharacterGenerator: React.FC<CharacterGeneratorProps> = ({ onCharacterSave
       const imageData = await generateCharacterSheet(description, style);
       setGeneratedImage(imageData);
     } catch (err) {
-      setError('キャラクターの生成中にエラーが発生しました。もう一度お試しください。');
+      setError(
+        "キャラクターの生成中にエラーが発生しました。もう一度お試しください。"
+      );
       console.error(err);
     } finally {
       setIsLoading(false);
     }
   };
-  
+
   const handleSave = () => {
     if (generatedImage && description) {
       const newCharacter: Character = {
@@ -48,12 +54,14 @@ const CharacterGenerator: React.FC<CharacterGeneratorProps> = ({ onCharacterSave
       onCharacterSave(newCharacter);
       // Reset for next character
       setGeneratedImage(null);
-      setDescription('');
+      setDescription("");
       setStyle(STYLE_PRESETS[0]);
     }
   };
-  
-  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+
+  const handleFileChange = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const file = event.target.files?.[0];
     if (file) {
       setIsLoading(true);
@@ -63,20 +71,20 @@ const CharacterGenerator: React.FC<CharacterGeneratorProps> = ({ onCharacterSave
         const reader = new FileReader();
         reader.onloadend = () => {
           const result = reader.result as string;
-          const [header, base64] = result.split(',');
+          const [header, base64] = result.split(",");
           const mimeTypeMatch = header.match(/:(.*?);/);
           if (!mimeTypeMatch || !mimeTypeMatch[1]) {
             throw new Error("MIMEタイプを判別できませんでした。");
           }
           setGeneratedImage({ base64, mimeType: mimeTypeMatch[1] });
           // If description is empty, provide a default one to enable saving.
-          if (description.trim() === '') {
+          if (description.trim() === "") {
             setDescription(`アップロードされたキャラクター: ${file.name}`);
           }
         };
         reader.readAsDataURL(file);
       } catch (err) {
-        setError('画像の読み込みに失敗しました。');
+        setError("画像の読み込みに失敗しました。");
         console.error(err);
       } finally {
         setIsLoading(false);
@@ -86,16 +94,19 @@ const CharacterGenerator: React.FC<CharacterGeneratorProps> = ({ onCharacterSave
       }
     }
   };
-  
+
   const handleUploadClick = () => {
     fileInputRef.current?.click();
   };
 
-
   return (
     <div className="bg-white rounded-xl shadow-lg p-6 md:p-8">
-      <h2 className="text-xl font-bold text-banana-dark mb-1">1. キャラクター生成</h2>
-      <p className="text-banana-gray mb-4">動画の主役を作成します。特徴と画風を選択してください！</p>
+      <h2 className="text-xl font-bold text-banana-dark mb-1">
+        1. キャラクター生成
+      </h2>
+      <p className="text-banana-gray mb-4">
+        動画の主役を作成します。特徴と画風を選択してください！
+      </p>
 
       <div className="flex flex-col gap-4">
         <textarea
@@ -107,7 +118,12 @@ const CharacterGenerator: React.FC<CharacterGeneratorProps> = ({ onCharacterSave
           disabled={isLoading}
         />
         <div>
-          <label htmlFor="char-style-select" className="block text-sm font-medium text-banana-gray mb-1">画風</label>
+          <label
+            htmlFor="char-style-select"
+            className="block text-sm font-medium text-banana-gray mb-1"
+          >
+            画風
+          </label>
           <select
             id="char-style-select"
             value={style}
@@ -116,7 +132,9 @@ const CharacterGenerator: React.FC<CharacterGeneratorProps> = ({ onCharacterSave
             disabled={isLoading}
           >
             {STYLE_PRESETS.map((preset) => (
-              <option key={preset} value={preset}>{preset}</option>
+              <option key={preset} value={preset}>
+                {preset}
+              </option>
             ))}
           </select>
         </div>
@@ -125,29 +143,31 @@ const CharacterGenerator: React.FC<CharacterGeneratorProps> = ({ onCharacterSave
           disabled={isLoading}
           className="w-full bg-banana-dark text-white font-bold py-3 px-4 rounded-lg hover:bg-opacity-90 transition duration-200 flex items-center justify-center disabled:bg-gray-400"
         >
-          {isLoading ? <LoadingSpinner /> : 'キャラクターを生成'}
+          {isLoading ? <LoadingSpinner /> : "キャラクターを生成"}
         </button>
-        
+
         <div className="relative flex py-1 items-center">
-            <div className="flex-grow border-t border-gray-200"></div>
-            <span className="flex-shrink mx-4 text-banana-gray text-sm">または</span>
-            <div className="flex-grow border-t border-gray-200"></div>
+          <div className="flex-grow border-t border-gray-200"></div>
+          <span className="flex-shrink mx-4 text-banana-gray text-sm">
+            または
+          </span>
+          <div className="flex-grow border-t border-gray-200"></div>
         </div>
 
         <input
-            type="file"
-            ref={fileInputRef}
-            onChange={handleFileChange}
-            className="hidden"
-            accept="image/png, image/jpeg, image/webp"
+          type="file"
+          ref={fileInputRef}
+          onChange={handleFileChange}
+          className="hidden"
+          accept="image/png, image/jpeg, image/webp"
         />
         <button
-            onClick={handleUploadClick}
-            disabled={isLoading}
-            className="w-full border-2 border-banana-dark text-banana-dark font-bold py-2.5 px-4 rounded-lg hover:bg-banana-dark/10 transition duration-200 flex items-center justify-center disabled:opacity-50 gap-2"
+          onClick={handleUploadClick}
+          disabled={isLoading}
+          className="w-full border-2 border-banana-dark text-banana-dark font-bold py-2.5 px-4 rounded-lg hover:bg-banana-dark/10 transition duration-200 flex items-center justify-center disabled:opacity-50 gap-2"
         >
-            <UploadIcon />
-            <span>画像をアップロード</span>
+          <UploadIcon />
+          <span>画像をアップロード</span>
         </button>
 
         {error && <p className="text-red-500 text-sm">{error}</p>}
@@ -162,17 +182,21 @@ const CharacterGenerator: React.FC<CharacterGeneratorProps> = ({ onCharacterSave
                 <LoadingSpinner />
                 <p className="mt-2 text-banana-gray">処理中...</p>
               </div>
-            ) : generatedImage && (
-              <img
-                src={`data:${generatedImage.mimeType};base64,${generatedImage.base64}`}
-                alt="Generated or uploaded character"
-                className="object-contain w-full h-full rounded-lg"
-              />
+            ) : (
+              generatedImage && (
+                <img
+                  src={`data:${generatedImage.mimeType};base64,${generatedImage.base64}`}
+                  alt="Generated or uploaded character"
+                  className="object-contain w-full h-full rounded-lg"
+                />
+              )
             )}
           </div>
           {generatedImage && !isLoading && (
             <>
-              <p className="text-sm text-banana-gray mt-2 text-center">キャラクターの特徴と画風は、シーン生成の際に参照されます。</p>
+              <p className="text-sm text-banana-gray mt-2 text-center">
+                キャラクターの特徴と画風は、シーン生成の際に参照されます。
+              </p>
               <button
                 onClick={handleSave}
                 disabled={!description.trim()}

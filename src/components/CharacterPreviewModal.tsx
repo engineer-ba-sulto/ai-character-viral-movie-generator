@@ -1,13 +1,16 @@
-import React from 'react';
-import type { Character } from '../types';
-import { CloseIcon, DownloadIcon } from './icons';
+import type { Character } from "@/types/character-animation";
+import React from "react";
+import { CloseIcon, DownloadIcon } from "./icons";
 
 interface CharacterPreviewModalProps {
   character: Character | null;
   onClose: () => void;
 }
 
-const CharacterPreviewModal: React.FC<CharacterPreviewModalProps> = ({ character, onClose }) => {
+const CharacterPreviewModal: React.FC<CharacterPreviewModalProps> = ({
+  character,
+  onClose,
+}) => {
   if (!character) {
     return null;
   }
@@ -17,26 +20,26 @@ const CharacterPreviewModal: React.FC<CharacterPreviewModalProps> = ({ character
   // Effect to handle Escape key press
   React.useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
+      if (event.key === "Escape") {
         onClose();
       }
     };
-    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown);
     return () => {
-      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener("keydown", handleKeyDown);
     };
   }, [onClose]);
 
   return (
-    <div 
+    <div
       className="fixed inset-0 bg-black bg-opacity-75 flex justify-center items-center z-50 p-4 animate-fade-in"
       onClick={onClose}
       role="dialog"
       aria-modal="true"
       aria-labelledby="character-preview-title"
     >
-      <div 
-        className="bg-white rounded-xl shadow-2xl p-4 md:p-6 relative max-w-lg w-full" 
+      <div
+        className="bg-white rounded-xl shadow-2xl p-4 md:p-6 relative max-w-lg w-full"
         onClick={(e) => e.stopPropagation()}
       >
         <button
@@ -52,28 +55,37 @@ const CharacterPreviewModal: React.FC<CharacterPreviewModalProps> = ({ character
             alt={character.description}
             className="w-full h-full object-contain"
           />
-           <div className="absolute bottom-4 right-4">
-              <a
-                href={imageUrl}
-                download={`nanobanana_character_${character.id}.png`}
-                className="bg-white/80 backdrop-blur-sm text-banana-dark p-3 rounded-full hover:bg-white transition-all duration-200 shadow-lg flex items-center gap-2"
-                aria-label="画像をダウンロード"
-                title="画像をダウンロード"
-              >
-                <DownloadIcon />
-              </a>
-           </div>
+          <div className="absolute bottom-4 right-4">
+            <a
+              href={imageUrl}
+              download={`nanobanana_character_${character.id}.png`}
+              className="bg-white/80 backdrop-blur-sm text-banana-dark p-3 rounded-full hover:bg-white transition-all duration-200 shadow-lg flex items-center gap-2"
+              aria-label="画像をダウンロード"
+              title="画像をダウンロード"
+            >
+              <DownloadIcon />
+            </a>
+          </div>
         </div>
         <div>
-          <h3 id="character-preview-title" className="text-lg font-bold text-banana-dark mb-2">キャラクター設定</h3>
+          <h3
+            id="character-preview-title"
+            className="text-lg font-bold text-banana-dark mb-2"
+          >
+            キャラクター設定
+          </h3>
           <div className="space-y-3">
             <div>
               <p className="text-sm font-semibold text-banana-gray">画風</p>
-              <p className="text-banana-dark bg-banana-light p-2 rounded-md">{character.style}</p>
+              <p className="text-banana-dark bg-banana-light p-2 rounded-md">
+                {character.style}
+              </p>
             </div>
             <div>
               <p className="text-sm font-semibold text-banana-gray">特徴</p>
-              <p className="text-banana-dark bg-banana-light p-2 rounded-md max-h-40 overflow-y-auto">{character.description}</p>
+              <p className="text-banana-dark bg-banana-light p-2 rounded-md max-h-40 overflow-y-auto">
+                {character.description}
+              </p>
             </div>
           </div>
         </div>

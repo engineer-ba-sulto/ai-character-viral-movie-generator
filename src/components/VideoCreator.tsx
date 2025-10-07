@@ -1,8 +1,15 @@
-import React, { useState, useEffect, useRef } from 'react';
-import type { Character, GeneratedResult, VideoClip } from '../types';
-import { startVideoGeneration, checkVideoOperation } from '../services/geminiService';
-import LoadingSpinner from './LoadingSpinner';
-import { PlusIcon, TrashIcon, DownloadIcon, UploadIcon } from './icons';
+import type {
+  Character,
+  GeneratedResult,
+  VideoClip,
+} from "@/types/character-animation";
+import {
+  checkVideoOperation,
+  startVideoGeneration,
+} from "@/utils/geminiService";
+import React, { useEffect, useRef, useState } from "react";
+import LoadingSpinner from "./LoadingSpinner";
+import { DownloadIcon, PlusIcon, TrashIcon, UploadIcon } from "./icons";
 
 declare var JSZip: any;
 
@@ -19,86 +26,98 @@ const POLLING_INTERVAL = 10000; // 10 seconds
 
 const combineVideos = (videoUrls: string[]): Promise<Blob> => {
   return new Promise((resolve, reject) => {
-      if (!videoUrls || videoUrls.length === 0) {
-          return reject(new Error("No videos to combine."));
+    if (!videoUrls || videoUrls.length === 0) {
+      return reject(new Error("No videos to combine."));
+    }
+
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+    if (!ctx) {
+      return reject(new Error("Could not get 2D context from canvas"));
+    }
+
+    const videoElement = document.createElement("video");
+    videoElement.muted = true;
+    videoElement.playsInline = true;
+
+    let recorder: MediaRecorder;
+    const chunks: Blob[] = [];
+    let currentVideoIndex = 0;
+
+    videoElement.onloadedmetadata = () => {
+      // Setup canvas and recorder on first video load
+      if (currentVideoIndex === 0) {
+        canvas.width = videoElement.videoWidth;
+        canvas.height = videoElement.videoHeight;
+
+        const stream = canvas.captureStream(30);
+        const options = { mimeType: "video/webm; codecs=vp9" };
+        recorder = new MediaRecorder(stream, options);
+
+        recorder.ondataavailable = (e) => {
+          if (e.data.size > 0) {
+            chunks.push(e.data);
+          }
+        };
+
+        recorder.onstop = () => {
+          const combinedBlob = new Blob(chunks, { type: "video/webm" });
+          resolve(combinedBlob);
+        };
+
+        recorder.start();
       }
+      videoElement.play().catch(reject);
+    };
 
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      if (!ctx) {
-          return reject(new Error("Could not get 2D context from canvas"));
+    const drawFrame = () => {
+      if (!videoElement.paused && !videoElement.ended) {
+        ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+        requestAnimationFrame(drawFrame);
       }
+    };
 
-      const videoElement = document.createElement('video');
-      videoElement.muted = true;
-      videoElement.playsInline = true;
+    videoElement.onended = () => {
+      currentVideoIndex++;
+      if (currentVideoIndex < videoUrls.length) {
+        playNext();
+      } else {
+        recorder.stop();
+      }
+    };
 
-      let recorder: MediaRecorder;
-      const chunks: Blob[] = [];
-      let currentVideoIndex = 0;
+    const playNext = () => {
+      videoElement.src = videoUrls[currentVideoIndex];
+    };
 
-      videoElement.onloadedmetadata = () => {
-          // Setup canvas and recorder on first video load
-          if (currentVideoIndex === 0) {
-              canvas.width = videoElement.videoWidth;
-              canvas.height = videoElement.videoHeight;
-              
-              const stream = canvas.captureStream(30);
-              const options = { mimeType: 'video/webm; codecs=vp9' };
-              recorder = new MediaRecorder(stream, options);
+    videoElement.onplay = drawFrame;
+    videoElement.onerror = (e) => {
+      console.error("Video Error:", e);
+      recorder.stop();
+      reject(
+        new Error(
+          `Failed to load video at index ${currentVideoIndex}. Check console for details.`
+        )
+      );
+    };
 
-              recorder.ondataavailable = (e) => {
-                  if (e.data.size > 0) {
-                      chunks.push(e.data);
-                  }
-              };
-              
-              recorder.onstop = () => {
-                  const combinedBlob = new Blob(chunks, { type: 'video/webm' });
-                  resolve(combinedBlob);
-              };
-
-              recorder.start();
-          }
-          videoElement.play().catch(reject);
-      };
-
-      const drawFrame = () => {
-          if (!videoElement.paused && !videoElement.ended) {
-              ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
-              requestAnimationFrame(drawFrame);
-          }
-      };
-
-      videoElement.onended = () => {
-          currentVideoIndex++;
-          if (currentVideoIndex < videoUrls.length) {
-              playNext();
-          } else {
-              recorder.stop();
-          }
-      };
-
-      const playNext = () => {
-          videoElement.src = videoUrls[currentVideoIndex];
-      };
-      
-      videoElement.onplay = drawFrame;
-      videoElement.onerror = (e) => {
-          console.error('Video Error:', e);
-          recorder.stop();
-          reject(new Error(`Failed to load video at index ${currentVideoIndex}. Check console for details.`));
-      };
-      
-      playNext();
+    playNext();
   });
 };
 
-
-const VideoCreator: React.FC<VideoCreatorProps> = ({ character, generatedImages, savedClips, onUpdateClips, onBack, onUpdateGeneratedImages }) => {
+const VideoCreator: React.FC<VideoCreatorProps> = ({
+  character,
+  generatedImages,
+  savedClips,
+  onUpdateClips,
+  onBack,
+  onUpdateGeneratedImages,
+}) => {
   const [clips, setClips] = useState<VideoClip[]>(savedClips);
   const [error, setError] = useState<string | null>(null);
-  const [zipStatus, setZipStatus] = useState<'idle' | 'combining' | 'zipping'>('idle');
+  const [zipStatus, setZipStatus] = useState<"idle" | "combining" | "zipping">(
+    "idle"
+  );
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Sync with parent state whenever clips change
@@ -108,7 +127,9 @@ const VideoCreator: React.FC<VideoCreatorProps> = ({ character, generatedImages,
 
   // Polling logic for generating clips
   useEffect(() => {
-    const clipsToPoll = clips.filter(c => c.status === 'generating' && c.operation);
+    const clipsToPoll = clips.filter(
+      (c) => c.status === "generating" && c.operation
+    );
     if (clipsToPoll.length === 0) return;
 
     const intervalId = setInterval(async () => {
@@ -117,30 +138,82 @@ const VideoCreator: React.FC<VideoCreatorProps> = ({ character, generatedImages,
           const updatedOp = await checkVideoOperation(clip.operation);
 
           if (updatedOp.done) {
-            const downloadLink = updatedOp.response?.generatedVideos?.[0]?.video?.uri;
+            const downloadLink =
+              updatedOp.response?.generatedVideos?.[0]?.video?.uri;
             if (downloadLink) {
               try {
-                const response = await fetch(`${downloadLink}&key=${process.env.API_KEY}`);
-                if (!response.ok) throw new Error(`Failed to fetch video: ${response.statusText}`);
+                const response = await fetch(
+                  `${downloadLink}&key=${process.env.API_KEY}`
+                );
+                if (!response.ok)
+                  throw new Error(
+                    `Failed to fetch video: ${response.statusText}`
+                  );
                 const blob = await response.blob();
                 const videoUrl = URL.createObjectURL(blob);
-                
-                setClips(prev => prev.map(c => c.id === clip.id ? { ...c, status: 'done', generatedVideoUrl: videoUrl, operation: undefined } : c));
+
+                setClips((prev) =>
+                  prev.map((c) =>
+                    c.id === clip.id
+                      ? {
+                          ...c,
+                          status: "done",
+                          generatedVideoUrl: videoUrl,
+                          operation: undefined,
+                        }
+                      : c
+                  )
+                );
               } catch (fetchErr) {
                 console.error(fetchErr);
-                setClips(prev => prev.map(c => c.id === clip.id ? { ...c, status: 'error', errorMessage: '動画データのダウンロードに失敗しました。' } : c));
+                setClips((prev) =>
+                  prev.map((c) =>
+                    c.id === clip.id
+                      ? {
+                          ...c,
+                          status: "error",
+                          errorMessage:
+                            "動画データのダウンロードに失敗しました。",
+                        }
+                      : c
+                  )
+                );
               }
             } else {
-              console.error('Video op done but no URI:', updatedOp);
-              setClips(prev => prev.map(c => c.id === clip.id ? { ...c, status: 'error', errorMessage: '生成失敗: 動画URLが返されませんでした。' } : c));
+              console.error("Video op done but no URI:", updatedOp);
+              setClips((prev) =>
+                prev.map((c) =>
+                  c.id === clip.id
+                    ? {
+                        ...c,
+                        status: "error",
+                        errorMessage: "生成失敗: 動画URLが返されませんでした。",
+                      }
+                    : c
+                )
+              );
             }
           } else {
             // Update operation object for next poll
-            setClips(prev => prev.map(c => c.id === clip.id ? { ...c, operation: updatedOp } : c));
+            setClips((prev) =>
+              prev.map((c) =>
+                c.id === clip.id ? { ...c, operation: updatedOp } : c
+              )
+            );
           }
         } catch (err) {
           console.error(`Polling error for clip ${clip.id}:`, err);
-          setClips(prev => prev.map(c => c.id === clip.id ? { ...c, status: 'error', errorMessage: 'ステータス確認中にエラーが発生しました。' } : c));
+          setClips((prev) =>
+            prev.map((c) =>
+              c.id === clip.id
+                ? {
+                    ...c,
+                    status: "error",
+                    errorMessage: "ステータス確認中にエラーが発生しました。",
+                  }
+                : c
+            )
+          );
         }
       }
     }, POLLING_INTERVAL);
@@ -151,35 +224,40 @@ const VideoCreator: React.FC<VideoCreatorProps> = ({ character, generatedImages,
   const handleUploadClick = () => {
     fileInputRef.current?.click();
   };
-  
-  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+
+  const handleFileChange = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const files = event.target.files;
     if (!files || files.length === 0) return;
-  
+
     const UPLOADED_SCENE_DESC = "アップロードした画像";
     setError(null);
-  
+
     try {
-      const imagePromises = Array.from(files).map(file => {
+      const imagePromises = Array.from(files).map((file) => {
         return new Promise<string>((resolve, reject) => {
           const reader = new FileReader();
           reader.onloadend = () => {
             const result = reader.result as string;
-            const [, base64Data] = result.split(',');
+            const [, base64Data] = result.split(",");
             resolve(base64Data);
           };
-          reader.onerror = (error) => reject(new Error(`File reading error for ${file.name}: ${error}`));
+          reader.onerror = (error) =>
+            reject(new Error(`File reading error for ${file.name}: ${error}`));
           reader.readAsDataURL(file);
         });
       });
-  
+
       const newBase64Images = await Promise.all(imagePromises);
-  
-      const existingUploads = generatedImages.find(r => r.sceneDescription === UPLOADED_SCENE_DESC);
-      
+
+      const existingUploads = generatedImages.find(
+        (r) => r.sceneDescription === UPLOADED_SCENE_DESC
+      );
+
       let updatedGeneratedImages: GeneratedResult[];
       if (existingUploads) {
-        updatedGeneratedImages = generatedImages.map(r => 
+        updatedGeneratedImages = generatedImages.map((r) =>
           r.sceneDescription === UPLOADED_SCENE_DESC
             ? { ...r, images: [...r.images, ...newBase64Images] }
             : r
@@ -191,11 +269,10 @@ const VideoCreator: React.FC<VideoCreatorProps> = ({ character, generatedImages,
         };
         updatedGeneratedImages = [...generatedImages, newResult];
       }
-  
+
       onUpdateGeneratedImages(updatedGeneratedImages);
-  
     } catch (err) {
-      setError('画像のアップロード中にエラーが発生しました。');
+      setError("画像のアップロード中にエラーが発生しました。");
       console.error(err);
     } finally {
       if (fileInputRef.current) {
@@ -204,126 +281,180 @@ const VideoCreator: React.FC<VideoCreatorProps> = ({ character, generatedImages,
     }
   };
 
-
   const addImageToTimeline = (image: string, sceneDescription: string) => {
     const newClip: VideoClip = {
       id: `clip_${Date.now()}_${Math.random()}`,
       sourceImage: image,
       sourceSceneDescription: sceneDescription,
-      motionPrompt: '',
+      motionPrompt: "",
       duration: 4,
-      status: 'idle',
+      status: "idle",
     };
-    setClips(prev => [...prev, newClip]);
+    setClips((prev) => [...prev, newClip]);
   };
 
   const updateClipPrompt = (id: string, prompt: string) => {
-    setClips(prev => prev.map(c => c.id === id ? { ...c, motionPrompt: prompt } : c));
+    setClips((prev) =>
+      prev.map((c) => (c.id === id ? { ...c, motionPrompt: prompt } : c))
+    );
   };
-  
+
   const updateClipDuration = (id: string, duration: number) => {
     const validDuration = Math.max(1, Math.min(10, duration || 1));
-    setClips(prev => prev.map(c => c.id === id ? { ...c, duration: validDuration } : c));
+    setClips((prev) =>
+      prev.map((c) => (c.id === id ? { ...c, duration: validDuration } : c))
+    );
   };
 
   const removeClip = (id: string) => {
-    setClips(prev => prev.filter(c => c.id !== id));
+    setClips((prev) => prev.filter((c) => c.id !== id));
   };
 
   const handleGenerate = async () => {
     setError(null);
-    const clipsToGenerate = clips.filter(c => (c.status === 'idle' || c.status === 'error') && c.motionPrompt.trim() !== '');
+    const clipsToGenerate = clips.filter(
+      (c) =>
+        (c.status === "idle" || c.status === "error") &&
+        c.motionPrompt.trim() !== ""
+    );
     if (clipsToGenerate.length === 0) {
-      setError("生成するクリップがありません。プロンプトを追加または修正してください。");
+      setError(
+        "生成するクリップがありません。プロンプトを追加または修正してください。"
+      );
       return;
     }
 
     // Set status to generating
-    setClips(prev => prev.map(c => clipsToGenerate.find(g => g.id === c.id) ? { ...c, status: 'generating', errorMessage: undefined } : c));
+    setClips((prev) =>
+      prev.map((c) =>
+        clipsToGenerate.find((g) => g.id === c.id)
+          ? { ...c, status: "generating", errorMessage: undefined }
+          : c
+      )
+    );
 
     for (const clip of clipsToGenerate) {
       try {
         const promptCore = `${clip.motionPrompt.trim()}. The video content should fill the entire 9:16 frame. Vertical video, 9:16 aspect ratio.`;
-        const fullPrompt = character 
+        const fullPrompt = character
           ? `${promptCore}, featuring the character provided. Style: ${character.style}.`
           : promptCore;
 
-        const operation = await startVideoGeneration(fullPrompt, { base64: clip.sourceImage, mimeType: 'image/png' }, clip.duration);
-        setClips(prev => prev.map(c => c.id === clip.id ? { ...c, operation: operation } : c));
+        const operation = await startVideoGeneration(
+          fullPrompt,
+          { base64: clip.sourceImage, mimeType: "image/png" },
+          clip.duration
+        );
+        setClips((prev) =>
+          prev.map((c) =>
+            c.id === clip.id ? { ...c, operation: operation } : c
+          )
+        );
       } catch (err) {
         console.error(`Failed to start generation for clip ${clip.id}:`, err);
-        setClips(prev => prev.map(c => c.id === clip.id ? { ...c, status: 'error', errorMessage: '生成の開始に失敗しました。' } : c));
+        setClips((prev) =>
+          prev.map((c) =>
+            c.id === clip.id
+              ? {
+                  ...c,
+                  status: "error",
+                  errorMessage: "生成の開始に失敗しました。",
+                }
+              : c
+          )
+        );
       }
     }
   };
 
   const handleDownloadZip = async () => {
-    const clipsToDownload = clips.filter(c => c.status === 'done' && c.generatedVideoUrl);
+    const clipsToDownload = clips.filter(
+      (c) => c.status === "done" && c.generatedVideoUrl
+    );
     if (clipsToDownload.length === 0) return;
 
-    setZipStatus('combining');
+    setZipStatus("combining");
     setError(null);
 
     try {
-        const videoUrls = clipsToDownload.map(c => c.generatedVideoUrl!);
-        const combinedVideoBlob = await combineVideos(videoUrls);
-        
-        setZipStatus('zipping');
+      const videoUrls = clipsToDownload.map((c) => c.generatedVideoUrl!);
+      const combinedVideoBlob = await combineVideos(videoUrls);
 
-        const zip = new JSZip();
+      setZipStatus("zipping");
 
-        // Add combined video
-        zip.file(`combined_video.webm`, combinedVideoBlob);
-        
-        // Add individual clips
-        for (let i = 0; i < clipsToDownload.length; i++) {
-            const clip = clipsToDownload[i];
-            const response = await fetch(clip.generatedVideoUrl!);
-            const blob = await response.blob();
-            const safeName = clip.motionPrompt.replace(/[^a-zA-Z0-9]/g, '_').substring(0, 30);
-            zip.file(`clip_${i + 1}_${safeName}.mp4`, blob);
-        }
-        
-        const zipBlob = await zip.generateAsync({ type: 'blob' });
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(zipBlob);
-        link.download = `nanobanana_video_clips_${character?.id || 'custom'}.zip`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(link.href);
+      const zip = new JSZip();
 
+      // Add combined video
+      zip.file(`combined_video.webm`, combinedVideoBlob);
+
+      // Add individual clips
+      for (let i = 0; i < clipsToDownload.length; i++) {
+        const clip = clipsToDownload[i];
+        const response = await fetch(clip.generatedVideoUrl!);
+        const blob = await response.blob();
+        const safeName = clip.motionPrompt
+          .replace(/[^a-zA-Z0-9]/g, "_")
+          .substring(0, 30);
+        zip.file(`clip_${i + 1}_${safeName}.mp4`, blob);
+      }
+
+      const zipBlob = await zip.generateAsync({ type: "blob" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(zipBlob);
+      link.download = `nanobanana_video_clips_${character?.id || "custom"}.zip`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(link.href);
     } catch (err) {
-        console.error("ZIP creation failed:", err);
-        setError(err instanceof Error ? err.message : "Failed to create ZIP file.");
+      console.error("ZIP creation failed:", err);
+      setError(
+        err instanceof Error ? err.message : "Failed to create ZIP file."
+      );
     } finally {
-        setZipStatus('idle');
+      setZipStatus("idle");
     }
   };
-  
-  const isGenerating = clips.some(c => c.status === 'generating');
-  const clipsToGenerateCount = clips.filter(c => (c.status === 'idle' || c.status === 'error') && c.motionPrompt.trim() !== '').length;
-  const downloadableClipsCount = clips.filter(c => c.status === 'done').length;
-  const isDownloading = zipStatus !== 'idle';
+
+  const isGenerating = clips.some((c) => c.status === "generating");
+  const clipsToGenerateCount = clips.filter(
+    (c) =>
+      (c.status === "idle" || c.status === "error") &&
+      c.motionPrompt.trim() !== ""
+  ).length;
+  const downloadableClipsCount = clips.filter(
+    (c) => c.status === "done"
+  ).length;
+  const isDownloading = zipStatus !== "idle";
 
   return (
     <div>
-      <button onClick={onBack} className="text-banana-gray hover:text-banana-dark transition-colors mb-4">
+      <button
+        onClick={onBack}
+        className="text-banana-gray hover:text-banana-dark transition-colors mb-4"
+      >
         &larr; シーン作成に戻る
       </button>
       <div className="bg-white rounded-xl shadow-lg p-6 md:p-8 mb-8">
         <h2 className="text-xl font-bold text-banana-dark mb-1">3. 動画作成</h2>
-        <p className="text-banana-gray mb-4">シーンの画像に動きの指示（プロンプト）を加えて、動画クリップを作成します。</p>
+        <p className="text-banana-gray mb-4">
+          シーンの画像に動きの指示（プロンプト）を加えて、動画クリップを作成します。
+        </p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
         {/* Left Column: Available Scenes */}
         <div className="bg-white rounded-xl shadow-lg p-6 md:p-8 lg:sticky lg:top-8">
           <div className="flex justify-between items-center mb-4">
-            <h3 className="font-bold text-lg text-banana-dark">利用可能なシーン</h3>
-            <button onClick={handleUploadClick} className="flex items-center gap-1.5 text-sm text-banana-dark font-semibold py-1.5 px-3 rounded-lg hover:bg-banana-light transition duration-200 border border-banana-gray/50 hover:border-banana-yellow">
-                <UploadIcon />
-                <span>追加</span>
+            <h3 className="font-bold text-lg text-banana-dark">
+              利用可能なシーン
+            </h3>
+            <button
+              onClick={handleUploadClick}
+              className="flex items-center gap-1.5 text-sm text-banana-dark font-semibold py-1.5 px-3 rounded-lg hover:bg-banana-light transition duration-200 border border-banana-gray/50 hover:border-banana-yellow"
+            >
+              <UploadIcon />
+              <span>追加</span>
             </button>
           </div>
           <input
@@ -335,18 +466,31 @@ const VideoCreator: React.FC<VideoCreatorProps> = ({ character, generatedImages,
             multiple
           />
           {generatedImages.length === 0 ? (
-            <p className="text-banana-gray">動画にするためのシーンがありません。前のページに戻ってシーンを生成するか、画像をアップロードしてください。</p>
+            <p className="text-banana-gray">
+              動画にするためのシーンがありません。前のページに戻ってシーンを生成するか、画像をアップロードしてください。
+            </p>
           ) : (
             <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-2">
-              {generatedImages.map(result => (
+              {generatedImages.map((result) => (
                 <div key={result.sceneDescription}>
-                  <h4 className="font-semibold text-banana-dark text-sm mb-2">{result.sceneDescription}</h4>
+                  <h4 className="font-semibold text-banana-dark text-sm mb-2">
+                    {result.sceneDescription}
+                  </h4>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                     {result.images.map((img, idx) => (
-                      <div key={idx} className="group relative rounded-lg overflow-hidden">
-                        <img src={`data:image/png;base64,${img}`} alt={`${result.sceneDescription} ${idx+1}`} className="w-full h-full object-cover aspect-square"/>
-                        <button 
-                          onClick={() => addImageToTimeline(img, result.sceneDescription)}
+                      <div
+                        key={idx}
+                        className="group relative rounded-lg overflow-hidden"
+                      >
+                        <img
+                          src={`data:image/png;base64,${img}`}
+                          alt={`${result.sceneDescription} ${idx + 1}`}
+                          className="w-full h-full object-cover aspect-square"
+                        />
+                        <button
+                          onClick={() =>
+                            addImageToTimeline(img, result.sceneDescription)
+                          }
                           className="absolute inset-0 bg-black/50 text-white flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-sm font-bold"
                         >
                           <PlusIcon />
@@ -363,91 +507,150 @@ const VideoCreator: React.FC<VideoCreatorProps> = ({ character, generatedImages,
 
         {/* Right Column: Video Timeline */}
         <div className="bg-white rounded-xl shadow-lg p-6 md:p-8">
-          <h3 className="font-bold text-lg mb-4 text-banana-dark">ビデオタイムライン</h3>
+          <h3 className="font-bold text-lg mb-4 text-banana-dark">
+            ビデオタイムライン
+          </h3>
           <div className="flex flex-col sm:flex-row gap-4 mb-6">
-             <button
+            <button
               onClick={handleGenerate}
               disabled={isGenerating || clipsToGenerateCount === 0}
               className="w-full flex-1 bg-banana-dark text-white font-bold py-3 px-4 rounded-lg hover:bg-opacity-90 transition duration-200 flex items-center justify-center disabled:bg-gray-400"
             >
-              {isGenerating ? <LoadingSpinner /> : '▶'}
-              <span className="ml-2">{isGenerating ? '生成中...' : `クリップを生成 (${clipsToGenerateCount})`}</span>
+              {isGenerating ? <LoadingSpinner /> : "▶"}
+              <span className="ml-2">
+                {isGenerating
+                  ? "生成中..."
+                  : `クリップを生成 (${clipsToGenerateCount})`}
+              </span>
             </button>
             <button
               onClick={handleDownloadZip}
-              disabled={isDownloading || downloadableClipsCount === 0 || isGenerating}
+              disabled={
+                isDownloading || downloadableClipsCount === 0 || isGenerating
+              }
               className="w-full flex-1 border-2 border-banana-dark text-banana-dark font-bold py-2.5 px-4 rounded-lg hover:bg-banana-dark/10 transition duration-200 flex items-center justify-center disabled:bg-gray-300 disabled:border-gray-300 disabled:text-gray-500"
             >
-              {isDownloading ? <LoadingSpinner color="dark" /> : <DownloadIcon />}
+              {isDownloading ? (
+                <LoadingSpinner color="dark" />
+              ) : (
+                <DownloadIcon />
+              )}
               <span className="ml-2">
-                {zipStatus === 'combining' && '動画を結合中...'}
-                {zipStatus === 'zipping' && 'ZIPに圧縮中...'}
-                {zipStatus === 'idle' && `全クリップをZIPでDL (${downloadableClipsCount})`}
+                {zipStatus === "combining" && "動画を結合中..."}
+                {zipStatus === "zipping" && "ZIPに圧縮中..."}
+                {zipStatus === "idle" &&
+                  `全クリップをZIPでDL (${downloadableClipsCount})`}
               </span>
             </button>
           </div>
-          {error && <p className="text-red-500 text-sm mb-4" role="alert">{error}</p>}
-          
+          {error && (
+            <p className="text-red-500 text-sm mb-4" role="alert">
+              {error}
+            </p>
+          )}
+
           <div className="space-y-4">
             {clips.length === 0 ? (
-                <p className="text-center text-banana-gray p-8 border-2 border-dashed rounded-lg">左のシーンをタイムラインに追加して、動画生成を始めましょう。</p>
+              <p className="text-center text-banana-gray p-8 border-2 border-dashed rounded-lg">
+                左のシーンをタイムラインに追加して、動画生成を始めましょう。
+              </p>
             ) : (
-                clips.map((clip, index) => (
-                    <div key={clip.id} className="p-4 rounded-lg bg-gray-50 border flex flex-col sm:flex-row gap-4">
-                        <div className="flex-shrink-0 w-full sm:w-24">
-                           <p className="text-xs font-bold text-banana-gray mb-1">#{index + 1}</p>
-                           <img src={`data:image/png;base64,${clip.sourceImage}`} alt={clip.sourceSceneDescription} className="w-full rounded-md aspect-square object-cover" />
-                        </div>
-                        <div className="flex-grow">
-                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                               <textarea
-                                    value={clip.motionPrompt}
-                                    onChange={(e) => updateClipPrompt(clip.id, e.target.value)}
-                                    placeholder="例：ゆっくりと瞬きをする"
-                                    className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-banana-yellow focus:border-banana-yellow transition sm:col-span-2"
-                                    rows={2}
-                                    disabled={clip.status === 'generating' || clip.status === 'done'}
-                                    aria-label={`Prompt for clip ${index + 1}`}
-                               />
-                               <div>
-                                  <label htmlFor={`duration-${clip.id}`} className="block text-xs font-medium text-banana-gray mb-1">長さ(秒)</label>
-                                  <input
-                                      id={`duration-${clip.id}`}
-                                      type="number"
-                                      value={clip.duration}
-                                      onChange={(e) => updateClipDuration(clip.id, parseInt(e.target.value, 10))}
-                                      min="1"
-                                      max="10"
-                                      className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-banana-yellow focus:border-banana-yellow transition"
-                                      disabled={clip.status === 'generating' || clip.status === 'done'}
-                                      aria-label={`Duration in seconds for clip ${index + 1}`}
-                                  />
-                               </div>
-                            </div>
-                           <div className="mt-2 h-16 flex items-center justify-between">
-                              {clip.status === 'generating' && (
-                                <div className="flex items-center gap-2 text-banana-gray">
-                                  <LoadingSpinner color="dark" />
-                                  <span>生成中...</span>
-                                </div>
-                              )}
-                              {clip.status === 'done' && clip.generatedVideoUrl && (
-                                <video src={clip.generatedVideoUrl} controls playsInline loop className="w-24 rounded-md aspect-[9/16] bg-black shadow-inner"></video>
-                              )}
-                              {clip.status === 'error' && (
-                                <div className="flex items-center gap-2">
-                                  <p className="text-red-500 text-sm" role="alert">{clip.errorMessage}</p>
-                                </div>
-                              )}
-                           </div>
-                        </div>
-                         <div className="flex-shrink-0">
-                           <button onClick={() => removeClip(clip.id)} className="text-banana-gray hover:text-red-500 transition-colors" aria-label="Remove clip">
-                               <TrashIcon />
-                           </button>
-                        </div>
+              clips.map((clip, index) => (
+                <div
+                  key={clip.id}
+                  className="p-4 rounded-lg bg-gray-50 border flex flex-col sm:flex-row gap-4"
+                >
+                  <div className="flex-shrink-0 w-full sm:w-24">
+                    <p className="text-xs font-bold text-banana-gray mb-1">
+                      #{index + 1}
+                    </p>
+                    <img
+                      src={`data:image/png;base64,${clip.sourceImage}`}
+                      alt={clip.sourceSceneDescription}
+                      className="w-full rounded-md aspect-square object-cover"
+                    />
+                  </div>
+                  <div className="flex-grow">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                      <textarea
+                        value={clip.motionPrompt}
+                        onChange={(e) =>
+                          updateClipPrompt(clip.id, e.target.value)
+                        }
+                        placeholder="例：ゆっくりと瞬きをする"
+                        className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-banana-yellow focus:border-banana-yellow transition sm:col-span-2"
+                        rows={2}
+                        disabled={
+                          clip.status === "generating" || clip.status === "done"
+                        }
+                        aria-label={`Prompt for clip ${index + 1}`}
+                      />
+                      <div>
+                        <label
+                          htmlFor={`duration-${clip.id}`}
+                          className="block text-xs font-medium text-banana-gray mb-1"
+                        >
+                          長さ(秒)
+                        </label>
+                        <input
+                          id={`duration-${clip.id}`}
+                          type="number"
+                          value={clip.duration}
+                          onChange={(e) =>
+                            updateClipDuration(
+                              clip.id,
+                              parseInt(e.target.value, 10)
+                            )
+                          }
+                          min="1"
+                          max="10"
+                          className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-banana-yellow focus:border-banana-yellow transition"
+                          disabled={
+                            clip.status === "generating" ||
+                            clip.status === "done"
+                          }
+                          aria-label={`Duration in seconds for clip ${
+                            index + 1
+                          }`}
+                        />
+                      </div>
                     </div>
-                ))
+                    <div className="mt-2 h-16 flex items-center justify-between">
+                      {clip.status === "generating" && (
+                        <div className="flex items-center gap-2 text-banana-gray">
+                          <LoadingSpinner color="dark" />
+                          <span>生成中...</span>
+                        </div>
+                      )}
+                      {clip.status === "done" && clip.generatedVideoUrl && (
+                        <video
+                          src={clip.generatedVideoUrl}
+                          controls
+                          playsInline
+                          loop
+                          className="w-24 rounded-md aspect-[9/16] bg-black shadow-inner"
+                        ></video>
+                      )}
+                      {clip.status === "error" && (
+                        <div className="flex items-center gap-2">
+                          <p className="text-red-500 text-sm" role="alert">
+                            {clip.errorMessage}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex-shrink-0">
+                    <button
+                      onClick={() => removeClip(clip.id)}
+                      className="text-banana-gray hover:text-red-500 transition-colors"
+                      aria-label="Remove clip"
+                    >
+                      <TrashIcon />
+                    </button>
+                  </div>
+                </div>
+              ))
             )}
           </div>
         </div>
