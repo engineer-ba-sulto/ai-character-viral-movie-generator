@@ -28,11 +28,10 @@ export type SignupFormData = z.infer<typeof signupSchema>;
 
 // ログインフォームのバリデーションスキーマ
 export const loginSchema = z.object({
-  email: z
-    .string()
-    .email({ message: "有効なメールアドレスを入力してください。" }),
-  password: z.string().min(1, { message: "パスワードを入力してください。" }),
+  email: z.string().email("有効なメールアドレスを入力してください"),
+  password: z.string().min(1, "パスワードは必須です"),
+  rememberMe: z.boolean().optional(),
 });
 
 // ZodスキーマからTypeScriptの型を生成
-export type LoginFormInput = z.infer<typeof loginSchema>;
+export type LoginFormData = z.infer<typeof loginSchema>;
