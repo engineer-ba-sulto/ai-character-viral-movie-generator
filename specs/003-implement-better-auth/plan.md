@@ -33,13 +33,13 @@
 
 ## 概要
 
-Cloudflare D1 をデータベースとして利用し、メール/パスワードベースのログインをサポートする形で、ユーザー認証のために Better Auth を統合します。Better Auth の標準的な API パターンを使用して、セキュアなサインアップ・ログイン機能を実装します。調査フェーズでは、最適なセッション管理戦略（期間、無効化トリガー、同時セッションの可否）を決定します。
+Cloudflare D1 をデータベースとして、Drizzle ORM を通じて利用し、メール/パスワードベースのログインをサポートする形で、ユーザー認証のために Better Auth を統合します。Better Auth の標準的な API パターンを使用して、セキュアなサインアップ・ログイン機能を実装します。調査フェーズでは、最適なセッション管理戦略（期間、無効化トリガー、同時セッションの可否）を決定します。
 
 ## 技術的背景
 
 **言語/バージョン**: TypeScript
-**主要な依存関係**: Next.js, Better Auth, React Hook Form, Zod
-**ストレージ**: Cloudflare D1
+**主要な依存関係**: Next.js, Better Auth, React Hook Form, Zod, Drizzle ORM, Drizzle Kit
+**ストレージ**: Cloudflare D1 (Drizzle ORM 経由)
 **テスト**: Vitest (想定)
 **対象プラットフォーム**: Web
 **プロジェクトタイプ**: Web アプリケーション (Next.js)
@@ -95,15 +95,21 @@ src/
 ├── components/
 │   ├── login-form.tsx      # shadcn/ui login-01ブロックから生成 (T011)
 │   └── signup-form.tsx     # shadcn/ui signup-01ブロックから生成 (T011)
+├── db/
+│   ├── schema.ts           # Drizzle ORM テーブルスキーマ定義 (T004)
+│   └── migrations/         # Drizzle Kit が生成するマイグレーションファイル
+├── lib/
+│   └── db.ts               # Drizzle クライアントの初期化
 ├── types/
 │   └── auth.ts             # Zodスキーマと認証関連の型定義
 └── utils/
     └── auth/
         ├── server.ts       # Better Authサーバーサイド設定
         └── client.ts       # Better Authクライアントサイド設定
+drizzle.config.ts           # Drizzle Kit 設定ファイル
 ```
 
-**構造決定**: 憲章で定義された Web アプリケーション (Next.js) の構造に従います。認証関連のロジックは`src/app/(auth)`、`src/actions`、`src/utils/auth`などに分離して配置します。Better Auth の標準的な API パターンを使用し、サーバーアクションで`auth.api.signUpEmail()`と`auth.api.signInEmail()`を呼び出します。
+**構造決定**: 憲章で定義された Web アプリケーション (Next.js) の構造に従います。認証関連のロジックは`src/app/(auth)`、`src/actions`、`src/utils/auth`などに分離して配置します。Better Auth の標準的な API パターンを使用し、サーバーアクションで`auth.api.signUpEmail()`と`auth.api.signInEmail()`を呼び出します。データベース操作は Drizzle ORM を介して行います。
 
 **UI 実装アプローチ**: shadcn/ui のブロック（`signup-01`、`login-01`）をコマンドで導入し、生成されたフォームコンポーネントを`(auth)`ルートグループのレイアウトと組み合わせて使用します。これにより、一貫したデザインシステムと効率的な開発を実現します。
 
@@ -170,7 +176,9 @@ _このセクションは /tasks コマンドが何をするかを記述する�
 
 - `.specify/templates/tasks-template.md` をベースとして読み込む
 - フェーズ 1 の設計ドキュメント (契約, データモデル, クイックスタート) からタスクを生成する
-- 各エンティティ → モデル作成タスク [P]
+- Drizzle ORM と Drizzle Kit のインストールタスク (T001)
+- Drizzle Kit の設定ファイル `drizzle.config.ts` 作成タスク
+- Cloudflare D1 データベースのスキーマ定義タスク (`src/db/schema.ts`) (T004)
 - Better Auth のサーバーアクション実装タスク（T009, T010）
 - shadcn/ui ブロック導入タスク（T011）
 - 認証レイアウト作成タスク（T012）
@@ -180,7 +188,7 @@ _このセクションは /tasks コマンドが何をするかを記述する�
 
 **順序付け戦略**:
 
-- 依存関係順: モデル → Better Auth 設定 → サーバーアクション → shadcn/ui ブロック導入 → レイアウト → ページ → ミドルウェア → ドキュメント
+- 依存関係順: 依存関係インストール → Drizzle 設定 → DB スキーマ定義 → マイグレーション → Better Auth 設定 → サーバーアクション → shadcn/ui ブロック導入 → レイアウト → ページ → ミドルウェア → ドキュメント
 - 並列実行可能なものに [P] をマーク (独立したファイル)
 
 **推定出力**: tasks.md に 16 個の番号付き、順序付けされたタスク
@@ -188,6 +196,22 @@ _このセクションは /tasks コマンドが何をするかを記述する�
 **重要**: このフェーズは /tasks コマンドによって実行され、/plan では実行されません
 
 ## 実装詳細
+
+### Drizzle ORM と Cloudflare D1 連携
+
+**T001: 依存関係のインストール**
+
+- `drizzle-orm` と `drizzle-kit` をインストールします。
+
+**T003: Drizzle Kit 設定**
+
+- プロジェクトルートに `drizzle.config.ts` を作成し、Cloudflare D1 データベースへの接続情報とスキーマファイルのパスを設定します。
+
+**T004: データベーススキーマとマイグレーション**
+
+- `src/db/schema.ts` に `users` テーブルのスキーマを定義します。
+- `bunx drizzle-kit generate:sqlite` コマンドでマイグレーションファイルを生成します。
+- `wrangler d1 migrations apply [DATABASE_NAME]` コマンドでマイグレーションを適用します。
 
 ### Better Auth サーバーアクション実装
 
