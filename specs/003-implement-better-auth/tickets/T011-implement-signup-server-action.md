@@ -1,4 +1,4 @@
-# T009: サインアップ用サーバーアクションの実装
+# T011: サインアップ用サーバーアクションの実装 [X]
 
 ## 説明
 
@@ -12,7 +12,7 @@
 'use server';
 
 import { z } from 'zod';
-import { auth } from '@/lib/auth';
+import { auth } from '@/lib/auth/server';
 import { signupSchema } from '@/types/auth';
 import { headers } from 'next/headers';
 
