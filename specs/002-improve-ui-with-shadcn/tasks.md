@@ -41,10 +41,10 @@
   - **説明**: `ImageCard` のリファクタリング（T005）に合わせて、レイアウトを調整し、必要に応じてボタンを `Button` コンポーネントに置き換えます。
   - **依存関係**: T001, T005
 
-- [ ] **T007: `SceneCreator` コンポーネントのリファクタリング [P]**
+- [x] **T007: `SceneCreator` コンポーネントのリファクタリング [P]**
 
   - **ファイル**: `src/components/SceneCreator.tsx`
-  - **説明**: 既存の `<button>`, `<input>`, `<textarea>` を `shadcn/ui` の `Button`, `Input`, `Textarea` コンポーネントに置き換えます。
+  - **説明**: 既存の `<button>`, `<input>`, `<textarea>`, `<select>`, `<label>` を `shadcn/ui` の `Button`, `Input`, `Textarea`, `Select`, `Label` コンポーネントに置き換え、レイアウトを `Card` 構造で整理します。
   - **依存関係**: T001
 
 - [ ] **T008: `ScenePreviewModal` コンポーネントのリファクタリング [P]**

@@ -10,6 +10,26 @@ import {
   TrashIcon,
   UploadIcon,
 } from "./icons";
+import { Button } from "./ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "./ui/card";
+import { Input } from "./ui/input";
+import { Label } from "./ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./ui/select";
+import { Separator } from "./ui/separator";
+import { Textarea } from "./ui/textarea";
 
 declare const JSZip: {
   new (): {
@@ -249,15 +269,16 @@ const SceneCreator: React.FC<SceneCreatorProps> = ({
   const hasGeneratedImages = generatedImages.length > 0;
 
   return (
-    <div className="bg-white rounded-xl shadow-lg p-6 md:p-8">
-      <h2 className="text-xl font-bold text-banana-dark mb-1">2. シーン作成</h2>
-      <p className="text-banana-gray mb-4">
-        {character
-          ? "キャラクターのポーズ、表情、背景を記述してください。"
-          : "画像をアップロードして動画の素材を追加します。"}
-      </p>
-
-      <div className="flex flex-col gap-4">
+    <Card>
+      <CardHeader>
+        <CardTitle>2. シーン作成</CardTitle>
+        <CardDescription>
+          {character
+            ? "キャラクターのポーズ、表情、背景を記述してください。"
+            : "画像をアップロードして動画の素材を追加します。"}
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="flex flex-col gap-4">
         {character && (
           <>
             <div>
@@ -272,79 +293,71 @@ const SceneCreator: React.FC<SceneCreatorProps> = ({
             <div className="space-y-3">
               {scenes.map((scene) => (
                 <div key={scene.id} className="flex items-start gap-2">
-                  <textarea
+                  <Textarea
                     value={scene.description}
                     onChange={(e) =>
                       handleSceneDescriptionChange(scene.id, e.target.value)
                     }
                     placeholder="例：散らかった机で頭を抱えている"
-                    className="flex-grow p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-banana-yellow focus:border-banana-yellow transition"
                     rows={3}
                     disabled={isLoading}
+                    className="flex-grow"
                   />
                   {scenes.length > 1 && (
-                    <button
+                    <Button
+                      variant="ghost"
+                      size="icon"
                       onClick={() => removeSceneInput(scene.id)}
                       disabled={isLoading}
-                      className="p-3 text-banana-gray hover:text-red-500 transition-colors disabled:opacity-50"
                       aria-label="このシーンを削除"
                       title="このシーンを削除"
                     >
                       <TrashIcon />
-                    </button>
+                    </Button>
                   )}
                 </div>
               ))}
             </div>
 
-            <button
+            <Button
+              variant="outline"
               onClick={addSceneInput}
               disabled={isLoading}
-              className="flex items-center justify-center gap-2 w-full text-banana-dark font-bold py-2 px-4 rounded-lg hover:bg-banana-light transition duration-200 border-2 border-dashed border-banana-gray/50 hover:border-banana-yellow disabled:opacity-50"
+              className="w-full gap-2 border-dashed"
             >
               <PlusIcon /> シーンを追加
-            </button>
+            </Button>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
-              <div>
-                <label
-                  htmlFor="num-images-select"
-                  className="block text-sm font-medium text-banana-gray mb-1"
-                >
-                  各シーンの生成枚数
-                </label>
-                <select
-                  id="num-images-select"
-                  value={numImages}
-                  onChange={(e) => setNumImages(Number(e.target.value))}
-                  className="w-full p-3 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-banana-yellow focus:border-banana-yellow transition"
+              <div className="grid w-full items-center gap-1.5">
+                <Label htmlFor="num-images-select">各シーンの生成枚数</Label>
+                <Select
+                  value={String(numImages)}
+                  onValueChange={(v) => setNumImages(Number(v))}
                   disabled={isLoading}
                 >
-                  <option value={1}>1枚</option>
-                  <option value={2}>2枚</option>
-                  <option value={3}>3枚</option>
-                  <option value={4}>4枚</option>
-                </select>
+                  <SelectTrigger id="num-images-select">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="1">1枚</SelectItem>
+                    <SelectItem value="2">2枚</SelectItem>
+                    <SelectItem value="3">3枚</SelectItem>
+                    <SelectItem value="4">4枚</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
-              <button
-                onClick={handleGenerate}
-                disabled={isGenerateDisabled}
-                className="w-full bg-banana-dark text-white font-bold py-3 px-4 rounded-lg hover:bg-opacity-90 transition duration-200 flex items-center justify-center disabled:bg-gray-400"
-              >
+              <Button onClick={handleGenerate} disabled={isGenerateDisabled}>
                 {isLoading ? <LoadingSpinner /> : `シーンを生成`}
-              </button>
+              </Button>
             </div>
             <div className="relative flex py-1 items-center">
-              <div className="flex-grow border-t border-gray-200"></div>
-              <span className="flex-shrink mx-4 text-banana-gray text-sm">
-                または
-              </span>
-              <div className="flex-grow border-t border-gray-200"></div>
+              <Separator className="flex-grow" />
             </div>
           </>
         )}
 
-        <input
+        <Input
           type="file"
           ref={fileInputRef}
           onChange={handleFileChange}
@@ -352,35 +365,31 @@ const SceneCreator: React.FC<SceneCreatorProps> = ({
           accept="image/png, image/jpeg, image/webp"
           multiple
         />
-        <button
+        <Button
           onClick={handleUploadClick}
           disabled={isLoading}
-          className="w-full border-2 border-banana-dark text-banana-dark font-bold py-2.5 px-4 rounded-lg hover:bg-banana-dark/10 transition duration-200 flex items-center justify-center disabled:opacity-50 gap-2"
+          variant="outline"
+          className="gap-2"
         >
           <UploadIcon />
           <span>シーン画像をアップロード</span>
-        </button>
+        </Button>
 
-        <button
+        <Button
           onClick={handleDownloadAll}
           disabled={isLoading || isZipping || !hasGeneratedImages}
-          className="w-full border-2 border-banana-dark text-banana-dark font-bold py-2.5 px-4 rounded-lg hover:bg-banana-dark/10 transition duration-200 flex items-center justify-center disabled:bg-gray-300 disabled:border-gray-300 disabled:text-gray-500 mt-4"
+          variant="outline"
+          className="gap-2"
         >
-          {isZipping ? (
-            <LoadingSpinner color="dark" />
-          ) : (
-            <>
-              <DownloadIcon />{" "}
-              <span className="ml-2">全画像をZIPでダウンロード</span>
-            </>
-          )}
-        </button>
+          {isZipping ? <LoadingSpinner color="dark" /> : <DownloadIcon />}
+          <span className="ml-2">全画像をZIPでダウンロード</span>
+        </Button>
 
-        {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
-      </div>
+        {error && <p className="text-sm text-destructive mt-2">{error}</p>}
+      </CardContent>
 
       {(isLoading || hasGeneratedImages) && (
-        <div className="mt-6">
+        <CardFooter className="flex-col items-stretch">
           <h3 className="font-bold mb-4">利用可能なシーン</h3>
           {isLoading && scenesToGenerateCount > 0 && (
             <div className="text-center p-8">
@@ -397,17 +406,19 @@ const SceneCreator: React.FC<SceneCreatorProps> = ({
                   <h4 className="font-semibold text-banana-dark break-words">
                     {result.sceneDescription}
                   </h4>
-                  <button
+                  <Button
+                    variant="ghost"
+                    size="icon"
                     onClick={() =>
                       handleClearSceneImages(result.sceneDescription)
                     }
                     disabled={isLoading}
-                    className="p-1 text-banana-gray hover:text-red-500 transition-colors disabled:opacity-50 flex-shrink-0 ml-2"
                     aria-label="このシーンの画像をクリア"
                     title="このシーンの画像をクリア"
+                    className="flex-shrink-0 ml-2"
                   >
                     <TrashIcon />
-                  </button>
+                  </Button>
                 </div>
 
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-2">
@@ -424,18 +435,15 @@ const SceneCreator: React.FC<SceneCreatorProps> = ({
           </div>
           {hasGeneratedImages && !isLoading && (
             <div className="mt-8 border-t pt-6">
-              <button
-                onClick={onGoToVideoCreator}
-                className="w-full bg-banana-yellow text-banana-dark font-bold py-3 px-4 rounded-lg hover:bg-opacity-90 transition duration-200 flex items-center justify-center gap-2"
-              >
+              <Button onClick={onGoToVideoCreator} className="w-full gap-2">
                 <FilmIcon />
                 追加したシーンで動画を作成する
-              </button>
+              </Button>
             </div>
           )}
-        </div>
+        </CardFooter>
       )}
-    </div>
+    </Card>
   );
 };
 

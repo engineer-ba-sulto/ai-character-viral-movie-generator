@@ -27,8 +27,12 @@
     - `<textarea>` → `<Textarea>`
     - `<select>` → `<Select>`
     - `<button>` → `<Button>`
+    - `<input type="file">` → `<Input type="file">`
+    - `<label>` → `<Label>`
+    - 区切り線 → `<Separator>`
     - `ImageCard` コンポーネントは T005 でリファクタリングされたものを使用します。
     - 「シーンを追加」ボタンは `variant="outline"` と `border-dashed` を使用して視覚的に区別します。
+    - 削除ボタンは `variant="ghost"` と `size="icon"` を使用します。
 
 ### コード例
 
@@ -105,6 +109,7 @@ import {
   CardHeader,
   CardTitle,
 } from "./ui/card";
+import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import {
   Select,
@@ -113,6 +118,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./ui/select";
+import { Separator } from "./ui/separator";
 import { Textarea } from "./ui/textarea";
 import ImageCard from "./ImageCard";
 import LoadingSpinner from "./LoadingSpinner";
@@ -200,10 +206,20 @@ const SceneCreator: React.FC<SceneCreatorProps> = (
                 {isLoading ? <LoadingSpinner /> : `シーンを生成`}
               </Button>
             </div>
-            {/* ... (separator) */}
+            <div className="relative flex py-1 items-center">
+              <Separator className="flex-grow" />
+            </div>
           </>
         )}
 
+        <Input
+          type="file"
+          ref={fileInputRef}
+          onChange={handleFileChange}
+          className="hidden"
+          accept="image/png, image/jpeg, image/webp"
+          multiple
+        />
         <Button
           onClick={handleUploadClick}
           disabled={isLoading}
@@ -228,7 +244,48 @@ const SceneCreator: React.FC<SceneCreatorProps> = (
 
       {(isLoading || hasGeneratedImages) && (
         <CardFooter className="flex-col items-stretch">
-          {/* ... (Generated images section, uses ImageCard) */}
+          <h3 className="font-bold mb-4">利用可能なシーン</h3>
+          {isLoading && scenesToGenerateCount > 0 && (
+            <div className="text-center p-8">
+              <LoadingSpinner color="dark" />
+              <p className="mt-2 text-muted-foreground">
+                シーンを生成中です… これには数分かかることがあります。
+              </p>
+            </div>
+          )}
+          <div className="space-y-6">
+            {generatedImages.map((result, index) => (
+              <div key={index}>
+                <div className="flex justify-between items-center border-b pb-1 mb-2">
+                  <h4 className="font-semibold break-words">
+                    {result.sceneDescription}
+                  </h4>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() =>
+                      handleClearSceneImages(result.sceneDescription)
+                    }
+                    disabled={isLoading}
+                    aria-label="このシーンの画像をクリア"
+                    title="このシーンの画像をクリア"
+                    className="flex-shrink-0 ml-2"
+                  >
+                    <TrashIcon />
+                  </Button>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-2">
+                  {result.images.map((imgBase64, imgIndex) => (
+                    <ImageCard
+                      key={imgIndex}
+                      base64Image={imgBase64}
+                      onPreview={() => onPreviewScene(imgBase64)}
+                    />
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
           {hasGeneratedImages && !isLoading && (
             <div className="mt-8 border-t pt-6">
               <Button onClick={onGoToVideoCreator} className="w-full gap-2">
