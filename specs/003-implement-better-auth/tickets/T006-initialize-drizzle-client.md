@@ -2,6 +2,28 @@
 
 Cloudflare D1 データベースに接続するための Drizzle クライアントインスタンスを `src/db/index.ts` に初期化し、エクスポートします。このクライアントは、サーバーサイドでのデータベース操作に使用されます。
 
+## 実装完了
+
+### 作成されたファイル
+
+- `src/db/index.ts`: Drizzle クライアントの初期化とエクスポート
+
+### 追加された型定義
+
+`cloudflare-env.d.ts`に以下の型定義を追加：
+
+```typescript
+declare namespace Cloudflare {
+  interface Env {
+    NEXTJS_ENV: string;
+    ASSETS: Fetcher;
+    DB: D1Database; // ← 追加
+  }
+}
+```
+
+この型定義により、`env.DB`が`D1Database`型として認識され、TypeScript の型チェックエラーが解決されます。
+
 ### 実装コード例
 
 ```typescript
