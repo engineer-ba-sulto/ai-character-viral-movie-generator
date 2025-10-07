@@ -11,6 +11,17 @@ import Image from "next/image";
 import React, { useEffect, useRef, useState } from "react";
 import LoadingSpinner from "./LoadingSpinner";
 import { DownloadIcon, PlusIcon, TrashIcon, UploadIcon } from "./icons";
+import { Button } from "./ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "./ui/card";
+import { Input } from "./ui/input";
+import { Label } from "./ui/label";
+import { Textarea } from "./ui/textarea";
 
 declare const JSZip: {
   new (): {
@@ -444,235 +455,240 @@ const VideoCreator: React.FC<VideoCreatorProps> = ({
 
   return (
     <div>
-      <button
-        onClick={onBack}
-        className="text-banana-gray hover:text-banana-dark transition-colors mb-4"
-      >
+      <Button onClick={onBack} variant="ghost" className="mb-4">
         &larr; シーン作成に戻る
-      </button>
-      <div className="bg-white rounded-xl shadow-lg p-6 md:p-8 mb-8">
-        <h2 className="text-xl font-bold text-banana-dark mb-1">3. 動画作成</h2>
-        <p className="text-banana-gray mb-4">
-          シーンの画像に動きの指示（プロンプト）を加えて、動画クリップを作成します。
-        </p>
-      </div>
+      </Button>
+      <Card className="mb-8">
+        <CardHeader>
+          <CardTitle>3. 動画作成</CardTitle>
+          <CardDescription>
+            シーンの画像に動きの指示（プロンプト）を加えて、動画クリップを作成します。
+          </CardDescription>
+        </CardHeader>
+      </Card>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
         {/* Left Column: Available Scenes */}
-        <div className="bg-white rounded-xl shadow-lg p-6 md:p-8 lg:sticky lg:top-8">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="font-bold text-lg text-banana-dark">
-              利用可能なシーン
-            </h3>
-            <button
+        <Card className="lg:sticky lg:top-8">
+          <CardHeader className="flex-row items-center justify-between">
+            <CardTitle className="text-lg">利用可能なシーン</CardTitle>
+            <Button
               onClick={handleUploadClick}
-              className="flex items-center gap-1.5 text-sm text-banana-dark font-semibold py-1.5 px-3 rounded-lg hover:bg-banana-light transition duration-200 border border-banana-gray/50 hover:border-banana-yellow"
+              variant="outline"
+              size="sm"
+              className="gap-1.5"
             >
               <UploadIcon />
               <span>追加</span>
-            </button>
-          </div>
-          <input
-            type="file"
-            ref={fileInputRef}
-            onChange={handleFileChange}
-            className="hidden"
-            accept="image/png, image/jpeg, image/webp"
-            multiple
-          />
-          {generatedImages.length === 0 ? (
-            <p className="text-banana-gray">
-              動画にするためのシーンがありません。前のページに戻ってシーンを生成するか、画像をアップロードしてください。
-            </p>
-          ) : (
-            <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-2">
-              {generatedImages.map((result) => (
-                <div key={result.sceneDescription}>
-                  <h4 className="font-semibold text-banana-dark text-sm mb-2">
-                    {result.sceneDescription}
-                  </h4>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                    {result.images.map((img, idx) => (
-                      <div
-                        key={idx}
-                        className="group relative rounded-lg overflow-hidden"
-                      >
-                        <Image
-                          src={`data:image/png;base64,${img}`}
-                          alt={`${result.sceneDescription} ${idx + 1}`}
-                          width={200}
-                          height={200}
-                          className="w-full h-full object-cover aspect-square"
-                        />
-                        <button
-                          onClick={() =>
-                            addImageToTimeline(img, result.sceneDescription)
-                          }
-                          className="absolute inset-0 bg-black/50 text-white flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-sm font-bold"
-                        >
-                          <PlusIcon />
-                          <span>タイムラインに追加</span>
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Right Column: Video Timeline */}
-        <div className="bg-white rounded-xl shadow-lg p-6 md:p-8">
-          <h3 className="font-bold text-lg mb-4 text-banana-dark">
-            ビデオタイムライン
-          </h3>
-          <div className="flex flex-col sm:flex-row gap-4 mb-6">
-            <button
-              onClick={handleGenerate}
-              disabled={isGenerating || clipsToGenerateCount === 0}
-              className="w-full flex-1 bg-banana-dark text-white font-bold py-3 px-4 rounded-lg hover:bg-opacity-90 transition duration-200 flex items-center justify-center disabled:bg-gray-400"
-            >
-              {isGenerating ? <LoadingSpinner /> : "▶"}
-              <span className="ml-2">
-                {isGenerating
-                  ? "生成中..."
-                  : `クリップを生成 (${clipsToGenerateCount})`}
-              </span>
-            </button>
-            <button
-              onClick={handleDownloadZip}
-              disabled={
-                isDownloading || downloadableClipsCount === 0 || isGenerating
-              }
-              className="w-full flex-1 border-2 border-banana-dark text-banana-dark font-bold py-2.5 px-4 rounded-lg hover:bg-banana-dark/10 transition duration-200 flex items-center justify-center disabled:bg-gray-300 disabled:border-gray-300 disabled:text-gray-500"
-            >
-              {isDownloading ? (
-                <LoadingSpinner color="dark" />
-              ) : (
-                <DownloadIcon />
-              )}
-              <span className="ml-2">
-                {zipStatus === "combining" && "動画を結合中..."}
-                {zipStatus === "zipping" && "ZIPに圧縮中..."}
-                {zipStatus === "idle" &&
-                  `全クリップをZIPでDL (${downloadableClipsCount})`}
-              </span>
-            </button>
-          </div>
-          {error && (
-            <p className="text-red-500 text-sm mb-4" role="alert">
-              {error}
-            </p>
-          )}
-
-          <div className="space-y-4">
-            {clips.length === 0 ? (
-              <p className="text-center text-banana-gray p-8 border-2 border-dashed rounded-lg">
-                左のシーンをタイムラインに追加して、動画生成を始めましょう。
+            </Button>
+          </CardHeader>
+          <CardContent>
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleFileChange}
+              className="hidden"
+              accept="image/png, image/jpeg, image/webp"
+              multiple
+            />
+            {generatedImages.length === 0 ? (
+              <p className="text-banana-gray">
+                動画にするためのシーンがありません。前のページに戻ってシーンを生成するか、画像をアップロードしてください。
               </p>
             ) : (
-              clips.map((clip, index) => (
-                <div
-                  key={clip.id}
-                  className="p-4 rounded-lg bg-gray-50 border flex flex-col sm:flex-row gap-4"
-                >
-                  <div className="flex-shrink-0 w-full sm:w-24">
-                    <p className="text-xs font-bold text-banana-gray mb-1">
-                      #{index + 1}
-                    </p>
-                    <Image
-                      src={`data:image/png;base64,${clip.sourceImage}`}
-                      alt={clip.sourceSceneDescription}
-                      width={100}
-                      height={100}
-                      className="w-full rounded-md aspect-square object-cover"
-                    />
-                  </div>
-                  <div className="flex-grow">
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                      <textarea
-                        value={clip.motionPrompt}
-                        onChange={(e) =>
-                          updateClipPrompt(clip.id, e.target.value)
-                        }
-                        placeholder="例：ゆっくりと瞬きをする"
-                        className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-banana-yellow focus:border-banana-yellow transition sm:col-span-2"
-                        rows={2}
-                        disabled={
-                          clip.status === "generating" || clip.status === "done"
-                        }
-                        aria-label={`Prompt for clip ${index + 1}`}
-                      />
-                      <div>
-                        <label
-                          htmlFor={`duration-${clip.id}`}
-                          className="block text-xs font-medium text-banana-gray mb-1"
+              <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-2">
+                {generatedImages.map((result) => (
+                  <div key={result.sceneDescription}>
+                    <h4 className="font-semibold text-banana-dark text-sm mb-2">
+                      {result.sceneDescription}
+                    </h4>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                      {result.images.map((img, idx) => (
+                        <div
+                          key={idx}
+                          className="group relative rounded-lg overflow-hidden"
                         >
-                          長さ(秒)
-                        </label>
-                        <input
-                          id={`duration-${clip.id}`}
-                          type="number"
-                          value={clip.duration}
+                          <Image
+                            src={`data:image/png;base64,${img}`}
+                            alt={`${result.sceneDescription} ${idx + 1}`}
+                            width={200}
+                            height={200}
+                            className="w-full h-full object-cover aspect-square"
+                          />
+                          <button
+                            onClick={() =>
+                              addImageToTimeline(img, result.sceneDescription)
+                            }
+                            className="absolute inset-0 bg-black/50 text-white flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-sm font-bold"
+                          >
+                            <PlusIcon />
+                            <span>タイムラインに追加</span>
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Right Column: Video Timeline */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">ビデオタイムライン</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-col sm:flex-row gap-4 mb-6">
+              <Button
+                onClick={handleGenerate}
+                disabled={isGenerating || clipsToGenerateCount === 0}
+                className="flex-1 gap-2"
+              >
+                {isGenerating ? <LoadingSpinner /> : "▶"}
+                <span>
+                  {isGenerating
+                    ? "生成中..."
+                    : `クリップを生成 (${clipsToGenerateCount})`}
+                </span>
+              </Button>
+              <Button
+                onClick={handleDownloadZip}
+                disabled={
+                  isDownloading || downloadableClipsCount === 0 || isGenerating
+                }
+                variant="outline"
+                className="flex-1 gap-2"
+              >
+                {isDownloading ? (
+                  <LoadingSpinner color="dark" />
+                ) : (
+                  <DownloadIcon />
+                )}
+                <span>
+                  {zipStatus === "combining" && "動画を結合中..."}
+                  {zipStatus === "zipping" && "ZIPに圧縮中..."}
+                  {zipStatus === "idle" &&
+                    `全クリップをZIPでDL (${downloadableClipsCount})`}
+                </span>
+              </Button>
+            </div>
+            {error && (
+              <p className="text-sm text-destructive mb-4" role="alert">
+                {error}
+              </p>
+            )}
+
+            <div className="space-y-4">
+              {clips.length === 0 ? (
+                <div className="text-center text-muted-foreground p-8 border-2 border-dashed rounded-lg">
+                  左のシーンをタイムラインに追加して、動画生成を始めましょう。
+                </div>
+              ) : (
+                clips.map((clip, index) => (
+                  <Card
+                    key={clip.id}
+                    className="p-4 flex flex-col sm:flex-row gap-4"
+                  >
+                    <div className="flex-shrink-0 w-full sm:w-24">
+                      <p className="text-xs font-bold text-banana-gray mb-1">
+                        #{index + 1}
+                      </p>
+                      <Image
+                        src={`data:image/png;base64,${clip.sourceImage}`}
+                        alt={clip.sourceSceneDescription}
+                        width={100}
+                        height={100}
+                        className="w-full rounded-md aspect-square object-cover"
+                      />
+                    </div>
+                    <div className="flex-grow">
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                        <Textarea
+                          value={clip.motionPrompt}
                           onChange={(e) =>
-                            updateClipDuration(
-                              clip.id,
-                              parseInt(e.target.value, 10)
-                            )
+                            updateClipPrompt(clip.id, e.target.value)
                           }
-                          min="1"
-                          max="10"
-                          className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-banana-yellow focus:border-banana-yellow transition"
+                          placeholder="例：ゆっくりと瞬きをする"
+                          className="sm:col-span-2"
+                          rows={2}
                           disabled={
                             clip.status === "generating" ||
                             clip.status === "done"
                           }
-                          aria-label={`Duration in seconds for clip ${
-                            index + 1
-                          }`}
+                          aria-label={`Prompt for clip ${index + 1}`}
                         />
+                        <div className="grid gap-1.5">
+                          <Label
+                            htmlFor={`duration-${clip.id}`}
+                            className="text-xs"
+                          >
+                            長さ(秒)
+                          </Label>
+                          <Input
+                            id={`duration-${clip.id}`}
+                            type="number"
+                            value={clip.duration}
+                            onChange={(e) =>
+                              updateClipDuration(
+                                clip.id,
+                                parseInt(e.target.value, 10)
+                              )
+                            }
+                            min="1"
+                            max="10"
+                            disabled={
+                              clip.status === "generating" ||
+                              clip.status === "done"
+                            }
+                            aria-label={`Duration in seconds for clip ${
+                              index + 1
+                            }`}
+                          />
+                        </div>
+                      </div>
+                      <div className="mt-2 h-16 flex items-center justify-between">
+                        {clip.status === "generating" && (
+                          <div className="flex items-center gap-2 text-banana-gray">
+                            <LoadingSpinner color="dark" />
+                            <span>生成中...</span>
+                          </div>
+                        )}
+                        {clip.status === "done" && clip.generatedVideoUrl && (
+                          <video
+                            src={clip.generatedVideoUrl}
+                            controls
+                            playsInline
+                            loop
+                            className="w-24 rounded-md aspect-[9/16] bg-black shadow-inner"
+                          ></video>
+                        )}
+                        {clip.status === "error" && (
+                          <div className="flex items-center gap-2">
+                            <p className="text-red-500 text-sm" role="alert">
+                              {clip.errorMessage}
+                            </p>
+                          </div>
+                        )}
                       </div>
                     </div>
-                    <div className="mt-2 h-16 flex items-center justify-between">
-                      {clip.status === "generating" && (
-                        <div className="flex items-center gap-2 text-banana-gray">
-                          <LoadingSpinner color="dark" />
-                          <span>生成中...</span>
-                        </div>
-                      )}
-                      {clip.status === "done" && clip.generatedVideoUrl && (
-                        <video
-                          src={clip.generatedVideoUrl}
-                          controls
-                          playsInline
-                          loop
-                          className="w-24 rounded-md aspect-[9/16] bg-black shadow-inner"
-                        ></video>
-                      )}
-                      {clip.status === "error" && (
-                        <div className="flex items-center gap-2">
-                          <p className="text-red-500 text-sm" role="alert">
-                            {clip.errorMessage}
-                          </p>
-                        </div>
-                      )}
+                    <div className="flex-shrink-0">
+                      <Button
+                        onClick={() => removeClip(clip.id)}
+                        variant="ghost"
+                        size="icon"
+                        aria-label="Remove clip"
+                      >
+                        <TrashIcon />
+                      </Button>
                     </div>
-                  </div>
-                  <div className="flex-shrink-0">
-                    <button
-                      onClick={() => removeClip(clip.id)}
-                      className="text-banana-gray hover:text-red-500 transition-colors"
-                      aria-label="Remove clip"
-                    >
-                      <TrashIcon />
-                    </button>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
+                  </Card>
+                ))
+              )}
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

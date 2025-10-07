@@ -53,9 +53,9 @@
   - **説明**: モーダルの構造を `shadcn/ui` の `Dialog` コンポーネントを使用して再構築し、ボタンを `Button` コンポーネントに置き換えます。
   - **依存関係**: T001
 
-- [ ] **T009: `VideoCreator` コンポーネントのリファクタリング [P]**
+- [x] **T009: `VideoCreator` コンポーネントのリファクタリング [P]**
   - **ファイル**: `src/components/VideoCreator.tsx`
-  - **説明**: 既存の `<button>` を `shadcn/ui` の `Button` コンポーネントに置き換えます。
+  - **説明**: 既存の `<button>`, `<textarea>`, `<input>`, `<label>` を `shadcn/ui` の `Button`, `Textarea`, `Input`, `Label` コンポーネントに置き換え、レイアウトを `Card` 構造で整理します。
   - **依存関係**: T001
 
 ## 2. 統合と検証
