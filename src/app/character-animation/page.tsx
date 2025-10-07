@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import CharacterGenerator from "../../components/CharacterGenerator";
 import CharacterPreviewModal from "../../components/CharacterPreviewModal";
 import Header from "../../components/Header";
@@ -119,22 +119,25 @@ const CharacterAnimationPage: React.FC = () => {
     setSelectedCharacterId(null);
   };
 
-  const handleUpdateGeneratedImages = (
-    id: string,
-    results: GeneratedResult[]
-  ) => {
-    setAllGeneratedImages((prev) => ({
-      ...prev,
-      [id]: results,
-    }));
-  };
+  const handleUpdateGeneratedImages = useCallback(
+    (id: string, results: GeneratedResult[]) => {
+      setAllGeneratedImages((prev) => ({
+        ...prev,
+        [id]: results,
+      }));
+    },
+    []
+  );
 
-  const handleUpdateVideoClips = (id: string, clips: VideoClip[]) => {
-    setAllVideoClips((prev) => ({
-      ...prev,
-      [id]: clips,
-    }));
-  };
+  const handleUpdateVideoClips = useCallback(
+    (id: string, clips: VideoClip[]) => {
+      setAllVideoClips((prev) => ({
+        ...prev,
+        [id]: clips,
+      }));
+    },
+    []
+  );
 
   const selectedCharacter = useMemo(() => {
     return characters.find((c) => c.id === selectedCharacterId) || null;

@@ -1,3 +1,90 @@
+# T003: `CharacterGenerator` コンポーネントのリファクタリング
+
+## 概要
+
+`CharacterGenerator` コンポーネント内のフォーム要素 (`<textarea>`, `<select>`, `<button>`) を `shadcn/ui` の `Textarea`, `Select`, `Button` に置き換え、フォーム全体のデザインを統一します。
+
+## ファイル
+
+- `src/components/CharacterGenerator.tsx`
+
+## 依存関係
+
+- `T001: shadcn/ui の初期化`
+
+## 実装の詳細
+
+1.  必要な `shadcn/ui` コンポーネントをプロジェクトに追加します。
+
+    ```bash
+    bunx --bun shadcn@latest add button textarea select input label card separator
+    ```
+
+2.  `src/components/CharacterGenerator.tsx` を開き、既存の HTML フォーム要素をインポートした `shadcn/ui` コンポーネントに置き換えます。
+
+    - `<textarea>` → `<Textarea />`
+    - `<select>` → `<Select />` (`SelectTrigger`, `SelectContent`, `SelectItem` を使用)
+    - `<button>` → `<Button />`
+    - フォームの区切り線は `<Separator />` で表現します。
+
+3.  `Card` コンポーネント (`Card`, `CardHeader`, `CardTitle`, `CardDescription`, `CardContent`, `CardFooter`) を使用して、コンポーネント全体のレイアウトを構造化します。
+
+### コード例
+
+#### 変更前 (`src/components/CharacterGenerator.tsx`)
+
+```tsx
+// ... (imports)
+const CharacterGenerator: React.FC<CharacterGeneratorProps> = ({
+  onCharacterSave,
+}) => {
+  // ... (state and handlers)
+  return (
+    <div className="bg-white rounded-xl shadow-lg p-6 md:p-8">
+      <h2 className="text-xl font-bold text-banana-dark mb-1">
+        1. キャラクター生成
+      </h2>
+      <p className="text-banana-gray mb-4">
+        動画の主役を作成します。特徴と画風を選択してください！
+      </p>
+
+      <div className="flex flex-col gap-4">
+        <textarea
+        // ...props
+        />
+        <div>
+          <label
+          // ...props
+          >
+            画風
+          </label>
+          <select
+          // ...props
+          >
+            {STYLE_PRESETS.map((preset) => (
+              <option key={preset} value={preset}>
+                {preset}
+              </option>
+            ))}
+          </select>
+        </div>
+        <button
+        // ...props
+        >
+          {isLoading ? <LoadingSpinner /> : "キャラクターを生成"}
+        </button>
+        {/* ... (separator and upload button) */}
+      </div>
+      {/* ... (preview section) */}
+    </div>
+  );
+};
+export default CharacterGenerator;
+```
+
+#### 変更後 (`src/components/CharacterGenerator.tsx`)
+
+```tsx
 import { STYLE_PRESETS } from "@/constants/character-animation";
 import type { Character } from "@/types/character-animation";
 import { generateCharacterSheet } from "@/utils/geminiService";
@@ -44,76 +131,17 @@ const CharacterGenerator: React.FC<CharacterGeneratorProps> = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleGenerate = async () => {
-    if (!description.trim()) {
-      setError("キャラクターの説明を入力してください。");
-      return;
-    }
-    setIsLoading(true);
-    setError(null);
-    setGeneratedImage(null);
-    try {
-      const imageData = await generateCharacterSheet(description, style);
-      setGeneratedImage(imageData);
-    } catch (err) {
-      setError(
-        "キャラクターの生成中にエラーが発生しました。もう一度お試しください。"
-      );
-      console.error(err);
-    } finally {
-      setIsLoading(false);
-    }
+    // ... (same logic)
   };
 
   const handleSave = () => {
-    if (generatedImage && description) {
-      const newCharacter: Character = {
-        id: `char_${Date.now()}`,
-        description,
-        style,
-        image: generatedImage,
-      };
-      onCharacterSave(newCharacter);
-      // Reset for next character
-      setGeneratedImage(null);
-      setDescription("");
-      setStyle(STYLE_PRESETS[0]);
-    }
+    // ... (same logic)
   };
 
   const handleFileChange = async (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      setIsLoading(true);
-      setError(null);
-      setGeneratedImage(null);
-      try {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          const result = reader.result as string;
-          const [header, base64] = result.split(",");
-          const mimeTypeMatch = header.match(/:(.*?);/);
-          if (!mimeTypeMatch || !mimeTypeMatch[1]) {
-            throw new Error("MIMEタイプを判別できませんでした。");
-          }
-          setGeneratedImage({ base64, mimeType: mimeTypeMatch[1] });
-          // If description is empty, provide a default one to enable saving.
-          if (description.trim() === "") {
-            setDescription(`アップロードされたキャラクター: ${file.name}`);
-          }
-        };
-        reader.readAsDataURL(file);
-      } catch (err) {
-        setError("画像の読み込みに失敗しました。");
-        console.error(err);
-      } finally {
-        setIsLoading(false);
-        if (fileInputRef.current) {
-          fileInputRef.current.value = ""; // Reset input for re-uploading the same file
-        }
-      }
-    }
+    // ... (same logic)
   };
 
   const handleUploadClick = () => {
@@ -156,6 +184,10 @@ const CharacterGenerator: React.FC<CharacterGeneratorProps> = ({
         </Button>
 
         <div className="relative flex py-1 items-center">
+          <Separator />
+          <span className="flex-shrink mx-4 text-muted-foreground text-sm">
+            または
+          </span>
           <Separator />
         </div>
 
@@ -219,3 +251,11 @@ const CharacterGenerator: React.FC<CharacterGeneratorProps> = ({
 };
 
 export default CharacterGenerator;
+```
+
+## 検証
+
+- フォームが `shadcn/ui` のスタイルで正しく表示されること。
+- 「キャラクターを生成」「画像をアップロード」「このキャラクターを保存」の各ボタンが機能すること。
+- 画風のドロップダウンが機能すること。
+- ローディング、エラー、プレビューの状態が正しく表示されること。
