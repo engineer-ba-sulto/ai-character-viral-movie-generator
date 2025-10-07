@@ -12,21 +12,26 @@ shadcn/ui のブロック（[signup-01](https://ui.shadcn.com/blocks/signup#sign
 
 ```bash
 # サインアップブロックの導入
-npx shadcn-ui@latest add -b signup-01
+npx shadcn@latest add signup-01
 
 # ログインブロックの導入
-npx shadcn-ui@latest add -b login-01
+npx shadcn@latest add login-01
 ```
 
 これにより、`src/components/signup-form.tsx` と `src/components/login-form.tsx` が生成されます。
+
+**注意**: 生成されたファイル名はケバブケース（kebab-case）ですが、プロジェクトの命名規則に従ってキャメルケース（camelCase）に変更することを推奨します：
+
+- `signup-form.tsx` → `SignupForm.tsx`
+- `login-form.tsx` → `LoginForm.tsx`
 
 ### 2. フォームコンポーネントのカスタマイズ
 
 生成されたフォームコンポーネントを、`shadcn/ui`の`Form`コンポーネントを利用してリファクタリングします。
 
-#### サインアップフォーム (`src/components/signup-form.tsx`) の修正
+#### サインアップフォーム (`src/components/SignupForm.tsx`) の修正
 
-```typescript:src/components/signup-form.tsx
+```typescript:src/components/SignupForm.tsx
 'use client';
 
 import { useForm } from 'react-hook-form';
@@ -123,9 +128,9 @@ export function SignupForm() {
 }
 ```
 
-#### ログインフォーム (`src/components/login-form.tsx`) の修正
+#### ログインフォーム (`src/components/LoginForm.tsx`) の修正
 
-```typescript:src/components/login-form.tsx
+```typescript:src/components/LoginForm.tsx
 'use client';
 
 import { useForm } from 'react-hook-form';
