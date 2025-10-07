@@ -34,59 +34,51 @@ const PageNavigator: React.FC<PageNavigatorProps> = ({
   onNavigate,
   canGoToVideo,
 }) => {
-  const getStepClass = (stepPage: Page) => {
-    const isCurrent = currentPage === stepPage;
-    const baseClass =
-      "px-4 py-2 rounded-lg font-semibold transition-colors duration-200 text-sm md:text-base";
-    if (isCurrent) {
-      return `${baseClass} bg-banana-dark text-white cursor-default`;
-    }
-    if (stepPage === "video" && !canGoToVideo) {
-      return `${baseClass} bg-gray-200 text-gray-500 cursor-not-allowed`;
-    }
-    // Allow navigation between character and scene unconditionally
-    if (stepPage === "character" || stepPage === "scene") {
-      return `${baseClass} bg-white text-banana-dark hover:bg-banana-light`;
-    }
-    return `${baseClass} bg-white text-banana-dark hover:bg-banana-light`;
-  };
-
   return (
     <nav className="bg-white rounded-xl shadow-lg p-3 mb-8">
       <ol className="flex items-center justify-around gap-2">
-        {steps.map((step, index) => (
-          <React.Fragment key={step.page}>
-            <li className="flex-1">
-              <button
-                onClick={() => onNavigate(step.page)}
-                disabled={
-                  currentPage === step.page ||
-                  (step.page === "video" && !canGoToVideo)
-                }
-                className={`w-full text-center ${getStepClass(step.page)}`}
-                aria-current={currentPage === step.page ? "page" : undefined}
-              >
-                {step.title}
-              </button>
-            </li>
-            {index < steps.length - 1 && (
-              <li className="text-banana-gray" aria-hidden="true">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
+        {steps.map((step, index) => {
+          const isCurrent = currentPage === step.page;
+          const isDisabled =
+            isCurrent || (step.page === "video" && !canGoToVideo);
+
+          return (
+            <React.Fragment key={step.page}>
+              <li className="flex-1">
+                <button
+                  onClick={() => onNavigate(step.page)}
+                  disabled={isDisabled}
+                  className={`w-full text-center px-4 py-2 rounded-lg font-semibold transition-colors duration-200 text-sm md:text-base ${
+                    isCurrent
+                      ? "bg-banana-dark text-white cursor-default"
+                      : step.page === "video" && !canGoToVideo
+                      ? "bg-gray-200 text-gray-500 cursor-not-allowed"
+                      : "bg-white text-banana-dark hover:bg-banana-light"
+                  }`}
+                  aria-current={isCurrent ? "page" : undefined}
                 >
-                  <path
-                    fillRule="evenodd"
-                    d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
-                    clipRule="evenodd"
-                  />
-                </svg>
+                  {step.title}
+                </button>
               </li>
-            )}
-          </React.Fragment>
-        ))}
+              {index < steps.length - 1 && (
+                <li className="text-banana-gray" aria-hidden="true">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </li>
+              )}
+            </React.Fragment>
+          );
+        })}
       </ol>
     </nav>
   );
