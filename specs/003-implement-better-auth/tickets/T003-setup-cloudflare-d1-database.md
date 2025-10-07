@@ -1,4 +1,4 @@
-# T003: Cloudflare D1 データベースのセットアップ
+# T003: Cloudflare D1 データベースのセットアップ [X]
 
 ## 説明
 
@@ -6,32 +6,12 @@
 
 ## 実装コード例
 
-1.  **`wrangler.jsonc`の設定**
+**データベースの作成**
 
-    `wrangler.jsonc`（または`wrangler.toml`）ファイルに、D1 データベースの定義を追加します。`database_id`は次のステップで取得します。
+ターミナルで以下のコマンドを実行して、Cloudflare 上に D1 データベースを作成します。
 
-    ```json:wrangler.jsonc
-    {
-      // ... existing configuration
-      "d1_databases": [
-        {
-          "binding": "DB",
-          "database_name": "ai-character-viral-movie-generator-db",
-          "database_id": "<your-database-id>",
-          "preview_database_id": "<your-preview-database-id>"
-        }
-      ]
-    }
-    ```
+```bash
+wrangler d1 create ai-character-viral-movie-generator-db
+```
 
-2.  **データベースの作成**
-
-    ターミナルで以下のコマンドを実行して、Cloudflare 上に D1 データベースを作成します。
-
-    ```bash
-    wrangler d1 create ai-character-viral-movie-generator-db
-    ```
-
-3.  **`database_id`の更新**
-
-    上記のコマンドが成功すると、`database_id`などが出力されます。その値を`wrangler.jsonc`の対応するフィールドにコピー＆ペーストしてください。
+**注意**: このコマンドを実行すると、`wrangler.jsonc`ファイルに D1 データベースの設定が自動的に追加されます。手動で設定を追加する必要はありません。
