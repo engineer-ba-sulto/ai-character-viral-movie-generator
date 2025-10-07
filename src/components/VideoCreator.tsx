@@ -9,7 +9,6 @@ import {
 } from "@/utils/geminiService";
 import Image from "next/image";
 import React, { useEffect, useRef, useState } from "react";
-import LoadingSpinner from "./LoadingSpinner";
 import { DownloadIcon, PlusIcon, TrashIcon, UploadIcon } from "./icons";
 import { Button } from "./ui/button";
 import {
@@ -21,6 +20,7 @@ import {
 } from "./ui/card";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
+import { Spinner } from "./ui/spinner";
 import { Textarea } from "./ui/textarea";
 
 declare const JSZip: {
@@ -553,7 +553,7 @@ const VideoCreator: React.FC<VideoCreatorProps> = ({
                 disabled={isGenerating || clipsToGenerateCount === 0}
                 className="flex-1 gap-2"
               >
-                {isGenerating ? <LoadingSpinner /> : "▶"}
+                {isGenerating ? <Spinner className="size-4" /> : "▶"}
                 <span>
                   {isGenerating
                     ? "生成中..."
@@ -569,7 +569,7 @@ const VideoCreator: React.FC<VideoCreatorProps> = ({
                 className="flex-1 gap-2"
               >
                 {isDownloading ? (
-                  <LoadingSpinner color="dark" />
+                  <Spinner className="size-4 text-banana-dark" />
                 ) : (
                   <DownloadIcon />
                 )}
@@ -658,7 +658,7 @@ const VideoCreator: React.FC<VideoCreatorProps> = ({
                       <div className="mt-2 h-16 flex items-center justify-between">
                         {clip.status === "generating" && (
                           <div className="flex items-center gap-2 text-banana-gray">
-                            <LoadingSpinner color="dark" />
+                            <Spinner className="size-4 text-banana-dark" />
                             <span>生成中...</span>
                           </div>
                         )}

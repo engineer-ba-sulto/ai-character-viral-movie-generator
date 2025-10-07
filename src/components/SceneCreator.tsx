@@ -1,8 +1,6 @@
 import type { Character, GeneratedResult } from "@/types/character-animation";
 import { generateScene } from "@/utils/geminiService";
 import React, { useRef, useState } from "react";
-import ImageCard from "./ImageCard";
-import LoadingSpinner from "./LoadingSpinner";
 import {
   DownloadIcon,
   FilmIcon,
@@ -10,6 +8,7 @@ import {
   TrashIcon,
   UploadIcon,
 } from "./icons";
+import ImageCard from "./ImageCard";
 import { Button } from "./ui/button";
 import {
   Card,
@@ -29,6 +28,7 @@ import {
   SelectValue,
 } from "./ui/select";
 import { Separator } from "./ui/separator";
+import { Spinner } from "./ui/spinner";
 import { Textarea } from "./ui/textarea";
 
 declare const JSZip: {
@@ -348,7 +348,7 @@ const SceneCreator: React.FC<SceneCreatorProps> = ({
                 </Select>
               </div>
               <Button onClick={handleGenerate} disabled={isGenerateDisabled}>
-                {isLoading ? <LoadingSpinner /> : `シーンを生成`}
+                {isLoading ? <Spinner className="size-4" /> : `シーンを生成`}
               </Button>
             </div>
             <div className="relative flex py-1 items-center">
@@ -381,7 +381,11 @@ const SceneCreator: React.FC<SceneCreatorProps> = ({
           variant="outline"
           className="gap-2"
         >
-          {isZipping ? <LoadingSpinner color="dark" /> : <DownloadIcon />}
+          {isZipping ? (
+            <Spinner className="size-4 text-banana-dark" />
+          ) : (
+            <DownloadIcon />
+          )}
           <span className="ml-2">全画像をZIPでダウンロード</span>
         </Button>
 
@@ -393,7 +397,7 @@ const SceneCreator: React.FC<SceneCreatorProps> = ({
           <h3 className="font-bold mb-4">利用可能なシーン</h3>
           {isLoading && scenesToGenerateCount > 0 && (
             <div className="text-center p-8">
-              <LoadingSpinner color="dark" />
+              <Spinner className="size-4 text-banana-dark" />
               <p className="mt-2 text-banana-gray">
                 シーンを生成中です… これには数分かかることがあります。
               </p>

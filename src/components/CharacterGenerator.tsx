@@ -4,7 +4,6 @@ import { generateCharacterSheet } from "@/utils/geminiService";
 import Image from "next/image";
 import React, { useRef, useState } from "react";
 import { UploadIcon } from "./icons";
-import LoadingSpinner from "./LoadingSpinner";
 import { Button } from "./ui/button";
 import {
   Card,
@@ -24,6 +23,7 @@ import {
   SelectValue,
 } from "./ui/select";
 import { Separator } from "./ui/separator";
+import { Spinner } from "./ui/spinner";
 import { Textarea } from "./ui/textarea";
 
 interface CharacterGeneratorProps {
@@ -152,7 +152,7 @@ const CharacterGenerator: React.FC<CharacterGeneratorProps> = ({
           </Select>
         </div>
         <Button onClick={handleGenerate} disabled={isLoading}>
-          {isLoading ? <LoadingSpinner /> : "キャラクターを生成"}
+          {isLoading ? <Spinner className="size-4" /> : "キャラクターを生成"}
         </Button>
 
         <div className="relative flex py-1 items-center">
@@ -186,7 +186,7 @@ const CharacterGenerator: React.FC<CharacterGeneratorProps> = ({
             <div className="w-full aspect-[9/16] bg-muted rounded-lg flex items-center justify-center">
               {isLoading ? (
                 <div className="text-center">
-                  <LoadingSpinner />
+                  <Spinner className="size-4" />
                   <p className="mt-2 text-muted-foreground">処理中...</p>
                 </div>
               ) : (
