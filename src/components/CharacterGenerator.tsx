@@ -5,6 +5,26 @@ import Image from "next/image";
 import React, { useRef, useState } from "react";
 import { UploadIcon } from "./icons";
 import LoadingSpinner from "./LoadingSpinner";
+import { Button } from "./ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "./ui/card";
+import { Input } from "./ui/input";
+import { Label } from "./ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./ui/select";
+import { Separator } from "./ui/separator";
+import { Textarea } from "./ui/textarea";
 
 interface CharacterGeneratorProps {
   onCharacterSave: (character: Character) => void;
@@ -101,117 +121,100 @@ const CharacterGenerator: React.FC<CharacterGeneratorProps> = ({
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-lg p-6 md:p-8">
-      <h2 className="text-xl font-bold text-banana-dark mb-1">
-        1. キャラクター生成
-      </h2>
-      <p className="text-banana-gray mb-4">
-        動画の主役を作成します。特徴と画風を選択してください！
-      </p>
-
-      <div className="flex flex-col gap-4">
-        <textarea
+    <Card>
+      <CardHeader>
+        <CardTitle>1. キャラクター生成</CardTitle>
+        <CardDescription>
+          動画の主役を作成します。特徴と画風を選択してください！
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="flex flex-col gap-4">
+        <Textarea
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           placeholder="例：茶色いお団子ヘア、丸メガネ、紫色のゆったりしたセーター、優しくて少し困り眉"
-          className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-banana-yellow focus:border-banana-yellow transition duration-200"
           rows={4}
           disabled={isLoading}
         />
-        <div>
-          <label
-            htmlFor="char-style-select"
-            className="block text-sm font-medium text-banana-gray mb-1"
-          >
-            画風
-          </label>
-          <select
-            id="char-style-select"
-            value={style}
-            onChange={(e) => setStyle(e.target.value)}
-            className="w-full p-3 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-banana-yellow focus:border-banana-yellow transition"
-            disabled={isLoading}
-          >
-            {STYLE_PRESETS.map((preset) => (
-              <option key={preset} value={preset}>
-                {preset}
-              </option>
-            ))}
-          </select>
+        <div className="grid w-full items-center gap-1.5">
+          <Label htmlFor="char-style-select">画風</Label>
+          <Select value={style} onValueChange={setStyle} disabled={isLoading}>
+            <SelectTrigger id="char-style-select">
+              <SelectValue placeholder="画風を選択" />
+            </SelectTrigger>
+            <SelectContent>
+              {STYLE_PRESETS.map((preset) => (
+                <SelectItem key={preset} value={preset}>
+                  {preset}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
-        <button
-          onClick={handleGenerate}
-          disabled={isLoading}
-          className="w-full bg-banana-dark text-white font-bold py-3 px-4 rounded-lg hover:bg-opacity-90 transition duration-200 flex items-center justify-center disabled:bg-gray-400"
-        >
+        <Button onClick={handleGenerate} disabled={isLoading}>
           {isLoading ? <LoadingSpinner /> : "キャラクターを生成"}
-        </button>
+        </Button>
 
         <div className="relative flex py-1 items-center">
-          <div className="flex-grow border-t border-gray-200"></div>
-          <span className="flex-shrink mx-4 text-banana-gray text-sm">
-            または
-          </span>
-          <div className="flex-grow border-t border-gray-200"></div>
+          <Separator />
         </div>
 
-        <input
+        <Input
           type="file"
           ref={fileInputRef}
           onChange={handleFileChange}
           className="hidden"
           accept="image/png, image/jpeg, image/webp"
         />
-        <button
+        <Button
           onClick={handleUploadClick}
           disabled={isLoading}
-          className="w-full border-2 border-banana-dark text-banana-dark font-bold py-2.5 px-4 rounded-lg hover:bg-banana-dark/10 transition duration-200 flex items-center justify-center disabled:opacity-50 gap-2"
+          variant="outline"
+          className="gap-2"
         >
           <UploadIcon />
           <span>画像をアップロード</span>
-        </button>
+        </Button>
 
-        {error && <p className="text-red-500 text-sm">{error}</p>}
-      </div>
+        {error && <p className="text-sm text-destructive">{error}</p>}
+      </CardContent>
 
       {(isLoading || generatedImage) && (
-        <div className="mt-6">
-          <h3 className="font-bold mb-2">プレビュー</h3>
-          <div className="w-full aspect-[9/16] bg-gray-100 rounded-lg flex items-center justify-center">
-            {isLoading ? (
-              <div className="text-center">
-                <LoadingSpinner />
-                <p className="mt-2 text-banana-gray">処理中...</p>
-              </div>
-            ) : (
-              generatedImage && (
-                <Image
-                  src={`data:${generatedImage.mimeType};base64,${generatedImage.base64}`}
-                  alt="Generated or uploaded character"
-                  width={400}
-                  height={600}
-                  className="object-contain w-full h-full rounded-lg"
-                />
-              )
-            )}
+        <CardFooter className="flex flex-col items-stretch gap-4">
+          <div>
+            <h3 className="font-bold mb-2 text-center">プレビュー</h3>
+            <div className="w-full aspect-[9/16] bg-muted rounded-lg flex items-center justify-center">
+              {isLoading ? (
+                <div className="text-center">
+                  <LoadingSpinner />
+                  <p className="mt-2 text-muted-foreground">処理中...</p>
+                </div>
+              ) : (
+                generatedImage && (
+                  <Image
+                    src={`data:${generatedImage.mimeType};base64,${generatedImage.base64}`}
+                    alt="Generated or uploaded character"
+                    width={400}
+                    height={600}
+                    className="object-contain w-full h-full rounded-lg"
+                  />
+                )
+              )}
+            </div>
           </div>
           {generatedImage && !isLoading && (
-            <>
-              <p className="text-sm text-banana-gray mt-2 text-center">
+            <div className="flex flex-col items-stretch gap-2">
+              <p className="text-sm text-muted-foreground text-center">
                 キャラクターの特徴と画風は、シーン生成の際に参照されます。
               </p>
-              <button
-                onClick={handleSave}
-                disabled={!description.trim()}
-                className="mt-2 w-full bg-banana-yellow text-banana-dark font-bold py-3 px-4 rounded-lg hover:bg-opacity-90 transition duration-200 disabled:bg-banana-gray/50 disabled:cursor-not-allowed"
-              >
+              <Button onClick={handleSave} disabled={!description.trim()}>
                 このキャラクターを保存
-              </button>
-            </>
+              </Button>
+            </div>
           )}
-        </div>
+        </CardFooter>
       )}
-    </div>
+    </Card>
   );
 };
 

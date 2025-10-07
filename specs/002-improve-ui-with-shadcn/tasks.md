@@ -17,7 +17,7 @@
   - **説明**: ナビゲーションリンクやボタンを `shadcn/ui` の `Button` やその他の適切なコンポーネントに置き換えます。
   - **依存関係**: T001
 
-- [ ] **T003: `CharacterGenerator` コンポーネントのリファクタリング [P]**
+- [x] **T003: `CharacterGenerator` コンポーネントのリファクタリング [P]**
 
   - **ファイル**: `src/components/CharacterGenerator.tsx`
   - **説明**: 既存の `<button>`, `<input>`, `<textarea>` を `shadcn/ui` の `Button`, `Input`, `Textarea` コンポーネントに置き換えます。
